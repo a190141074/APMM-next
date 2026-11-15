@@ -4,9 +4,12 @@ import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 const root = path.resolve(import.meta.dirname, "..");
 const files = [...new Set(execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd: root, encoding: "utf8" }).split("\0").filter(Boolean))];
+// 新增忽略规则不会移除已经跟踪的文件，因此必须单独阻止这类遗漏。
+const ignoredTracked = new Set(execFileSync("git", ["ls-files", "--cached", "--ignored", "--exclude-standard", "-z"], { cwd: root, encoding: "utf8" }).split("\0").filter(Boolean));
 const issues = [];
 let bytes = 0;
 for (const file of files) {
+  if (ignoredTracked.has(file)) issues.push({ file, reason: "ignored-but-tracked" });
   const data = readFileSync(path.join(root, file)); bytes += data.length;
   if (statSync(path.join(root, file)).size > 50 * 1024 * 1024) issues.push({ file, reason: "oversized" });
   if (/(^|\/)(data|credentials|signing|previews|node_modules|target-msvc)\//i.test(file)) issues.push({ file, reason: "private-or-generated-directory" });

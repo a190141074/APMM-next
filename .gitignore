@@ -24,3 +24,36 @@ src/previews/
 src/outimg/
 credentials/
 signing/
+
+# 本机缓存和构建生成的 schema 不进入源码仓库。
+/src-tauri/gen/schemas/
+**/.cargo-ok
+**/.cargo_vcs_info.json
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+*.tsbuildinfo
+*.pyc
+*.pyo
+
+# 安装包、调试产物和临时文件通过发行渠道交付。
+*.exe
+*.msi
+*.zip
+*.7z
+*.pdb
+*.dmp
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 本机令牌与签名私钥不得随源码发布。
+*-token.txt
+*-token.json
+*.key

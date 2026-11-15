@@ -16,6 +16,9 @@ for (const file of files) {
   if (data.includes(0)) continue;
   const content = data.toString("utf8");
   if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{30,}\b|github_pat_[A-Za-z0-9_]{30,}|\bAKIA[A-Z0-9]{16}\b/.test(content)) issues.push({ file, reason: "credential-pattern" });
+  if (/\b(?:Bearer|Basic)\s+[A-Za-z0-9._~+/-]{32,}={0,2}/i.test(content)) issues.push({ file, reason: "embedded-authorization" });
+  if (/https?:\/\/[^/\s:@]+:[^/\s@]{3,}@/i.test(content)) issues.push({ file, reason: "credential-in-url" });
+  if (/[A-Za-z]:[\\/]+Users[\\/]+(?!Public(?:[\\/]|\b)|Default(?:[\\/]|\b))[^\s\\/"'<>]+/i.test(content)) issues.push({ file, reason: "personal-profile-path" });
 }
 console.log(JSON.stringify({ files: files.length, bytes, issues }, null, 2));
 if (issues.length) process.exitCode = 1;

@@ -1,0 +1,179 @@
+[
+  {
+    "key": "busts",
+    "label": "战斗交互",
+    "group": "busts",
+    "category": "heroes",
+    "assetDir": "busts",
+    "regex": "^UT_Hero_Bust_(\\d+)"
+  },
+  {
+    "key": "card",
+    "label": "大立绘",
+    "group": "cards",
+    "category": "heroes",
+    "assetDir": "cards/card",
+    "regex": "^UT_Hero_Card_(\\d+)"
+  },
+  {
+    "key": "card2",
+    "label": "小立绘",
+    "group": "cards",
+    "category": "heroes",
+    "assetDir": "cards/card2",
+    "regex": "^UT_Hero_Card2_(\\d+)"
+  },
+  {
+    "key": "card_in_game",
+    "label": "局内卡",
+    "group": "cards",
+    "category": "heroes",
+    "assetDir": "cards/in_game",
+    "regex": "^UT_Hero_InGameCard_(\\d+)"
+  },
+  {
+    "key": "thin_card",
+    "label": "迷你立绘",
+    "group": "cards",
+    "category": "heroes",
+    "assetDir": "cards/thin",
+    "regex": "^UT_Hero_ThinCard_(\\d+)"
+  },
+  {
+    "key": "item_icons",
+    "label": "物品图标",
+    "group": "item_icons",
+    "category": "heroes",
+    "assetDir": "item_icons",
+    "regex": "^UT_Item_Hero_(\\d+)",
+    "stripSkin": true
+  },
+  {
+    "key": "level_up",
+    "label": "局内小人",
+    "group": "level_up",
+    "category": "heroes",
+    "assetDir": "level_up",
+    "regex": "^UT_Hero_LevelUp_(\\d+)"
+  },
+  {
+    "key": "profile_photos",
+    "label": "小头像",
+    "group": "profile_photos",
+    "category": "heroes",
+    "assetDir": "profile_photos",
+    "regex": "^UT_Hero_ProfilePhoto_(\\d+)"
+  },
+  {
+    "key": "role_photos",
+    "label": "海报",
+    "group": "role_photos",
+    "category": "heroes",
+    "assetDir": "role_photos",
+    "regex": "^UT_Hero_RolePhoto_(\\d+)"
+  },
+  {
+    "key": "standing_paintings",
+    "label": "立绘",
+    "group": "standing_paintings",
+    "category": "heroes",
+    "assetDir": "standing_paintings",
+    "regex": "^UT_Item_StandingPainting_(\\d+)"
+  },
+  {
+    "key": "land",
+    "label": "大地块",
+    "group": "land",
+    "category": "heroes",
+    "assetDir": "environment/board_and_map",
+    "regex": "^UT_Land_(\\d+)"
+  },
+  {
+    "key": "platform",
+    "label": "小地块",
+    "group": "platform",
+    "category": "heroes",
+    "assetDir": "environment/board_and_map",
+    "regex": "^UT_Platform_(\\d+)"
+  },
+  {
+    "key": "account_background",
+    "label": "名片",
+    "group": "account_background",
+    "category": "heroes",
+    "assetDir": "ui/ut_misc",
+    "regex": "^UT_AccountBackground_(\\d+)_\\d+"
+  },
+  {
+    "key": "hand_card",
+    "label": "手牌",
+    "group": "hand_card",
+    "category": "cards",
+    "assetDir": "cards/手牌",
+    "regex": "^UT_HandCard_(\\d+)"
+  },
+  {
+    "key": "event_card",
+    "label": "事件牌",
+    "group": "event_card",
+    "category": "cards",
+    "assetDir": "cards/event",
+    "regex": "^UT_Event_(\\d+)"
+  },
+  {
+    "key": "map_event",
+    "label": "地图事件",
+    "group": "map_event",
+    "category": "cards",
+    "assetDir": "cards/map_event",
+    "regex": "^UT_MapEvent_(\\d+)"
+  },
+  {
+    "key": "monster_card",
+    "label": "大立绘",
+    "group": "monster_card",
+    "category": "monsters",
+    "assetDir": "monsters",
+    "regex": "^UT_Monster_Card_(\\d+)"
+  },
+  {
+    "key": "monster_bust",
+    "label": "战斗交互",
+    "group": "monster_bust",
+    "category": "monsters",
+    "assetDir": "monsters/Bust",
+    "regex": "^UT_Monster_Bust_(\\d+)"
+  },
+  {
+    "key": "monster_profile",
+    "label": "小头像",
+    "group": "monster_profile",
+    "category": "monsters",
+    "assetDir": "monsters/ProfilePhoto",
+    "regex": "^UT_Monster_ProfilePhoto_(\\d+)"
+  },
+  {
+    "key": "relic",
+    "label": "筹码",
+    "group": "relic",
+    "category": "chips",
+    "assetDir": "chips",
+    "regex": "^UT_Relic_(\\d+)(?:_\\d+)?$"
+  },
+  {
+    "key": "relic_icon",
+    "label": "筹码通用图标",
+    "group": "relic_icon",
+    "category": "chips",
+    "assetDir": "chips/icons",
+    "regex": "^UT_Relic_([A-Za-z]+)$"
+  },
+  {
+    "key": "cursor",
+    "label": "鼠标样式",
+    "group": "cursor",
+    "category": "cursors",
+    "assetDir": "cursors",
+    "regex": "^(cursor_(?:up|down))$"
+  }
+]

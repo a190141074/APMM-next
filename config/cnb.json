@@ -1,0 +1,32 @@
+{
+  "preview": {
+    "enabled": true,
+    "ownerRepo": "astral-weird-egg/astral-party-mod-manager-assets",
+    "rawPrefix": "https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets/-/git/raw/main/",
+    "bundleDir": "bundles",
+    "manifestPath": "preview-manifest.json"
+  },
+  "update": {
+    "enabled": true,
+    "ownerRepo": "astral-weird-egg/astral-party-mod-manager-assets",
+    "rawPrefix": "https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets/-/git/raw/main/",
+    "manifestPath": "update-manifest-v2.json",
+    "assetDir": "releases",
+    "fallback": "https://github.com/a190141074/APMM-next/releases/latest/download/update-manifest-v2.json"
+  },
+  "plugin": {
+    "ownerRepo": "erinilis/apx-plugin-releases",
+    "rawPrefix": "https://cnb.cool/erinilis/apx-plugin-releases/-/git/raw/main/"
+  },
+  "workshop": {
+    "enabled": true,
+    "rawPrefix": "https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets/-/git/raw/main/workshop/",
+    "manifestPath": "manifest.json"
+  },
+  "probe": {
+    "samples": 2,
+    "bytes": 262144,
+    "connectTimeoutSecs": 10,
+    "probeTimeoutSecs": 20
+  }
+}

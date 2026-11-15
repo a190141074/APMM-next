@@ -1,0 +1,299 @@
+/* 统一语义颜色与克制动效。调色工具的固定颜色仅用于可读控制与色域展示。 */
+:root {
+  --accent-light: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --accent-hover: color-mix(in srgb, var(--accent) 86%, var(--text));
+  --focus: color-mix(in srgb, var(--accent) 65%, transparent);
+  --shadow-color: color-mix(in srgb, var(--text) 14%, transparent);
+  --shadow: 0 5px 22px var(--shadow-color);
+  --overlay: color-mix(in srgb, var(--sidebar) 55%, transparent);
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+input,
+textarea,
+.select-trigger,
+.filters,
+.search-box {
+  background-color: var(--surface-alt);
+}
+.modal,
+.select-content,
+.task-popover,
+.search-results,
+.package-menu > div {
+  background: var(--popover);
+}
+.badge.warning {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, var(--surface));
+}
+.badge.danger {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+}
+.badge.info {
+  color: var(--info);
+  background: color-mix(in srgb, var(--info) 12%, var(--surface));
+}
+.settings-content {
+  animation: page-enter 180ms ease-out;
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.nav-item,
+.settings-nav button,
+.segmented-tabs button {
+  transition:
+    background 120ms,
+    color 120ms,
+    border-color 120ms;
+}
+.select-content[data-state="open"],
+.task-popover[data-state="open"] {
+  animation: page-enter 160ms ease-out;
+}
+:root[data-hidden="true"] *,
+:root[data-hidden="true"] *::before,
+:root[data-hidden="true"] *::after {
+  animation-play-state: paused !important;
+}
+.segmented-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 3px 0 7px;
+  margin-bottom: 12px;
+}
+.segmented-tabs {
+  display: flex;
+  width: max-content;
+  min-width: min(100%, 450px);
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-alt);
+}
+.segmented-tabs button {
+  position: relative;
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.segmented-tabs button small {
+  font-size: 9px;
+  letter-spacing: 0.07em;
+}
+.segmented-tabs button:hover {
+  color: var(--text);
+}
+.segmented-tabs button[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--border);
+  box-shadow: 0 2px 5px var(--shadow-color);
+}
+.settings-layout {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.settings-nav {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 4px;
+}
+.settings-nav button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 7px;
+  font-size: 13px;
+  background: transparent;
+  color: var(--muted);
+}
+.settings-nav button:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+.settings-nav button.active {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.settings-content {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.settings-content .settings-card {
+  padding: 20px 22px;
+  box-shadow: none;
+}
+.settings-content h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+.settings-content .settings-card > h2::before {
+  content: "";
+  width: 3px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.settings-content p,
+.settings-content small {
+  font-size: 12px;
+  line-height: 1.65;
+}
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.settings-row > span {
+  min-width: 0;
+}
+.settings-row small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.settings-row > input[type="number"] {
+  width: 92px;
+}
+.settings-row input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.settings-row .select-trigger {
+  min-width: 120px;
+  font-size: 13px;
+}
+.settings-content .field {
+  font-size: 13px;
+}
+.scheme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.scheme-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.scheme-card.selected {
+  border-color: var(--accent);
+}
+.scheme-select {
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.scheme-select > strong,
+.scheme-select > small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.scheme-select > strong {
+  font-size: 13px;
+  margin-top: 12px;
+}
+.scheme-select > small {
+  color: var(--muted);
+  margin-top: 3px;
+}
+.scheme-swatches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.scheme-swatches > div {
+  height: 74px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.scheme-swatches span {
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 19px;
+}
+.scheme-swatches i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.scheme-actions {
+  border-top: 1px solid var(--border);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.scheme-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.theme-collection .section-heading {
+  align-items: flex-start;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.theme-collection .section-heading p {
+  margin: 5px 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}

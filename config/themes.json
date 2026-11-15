@@ -1,0 +1,4 @@
+{
+  "light": { "canvas": "#f7f8fc", "surface": "#ffffff", "surfaceAlt": "#f0f2f8", "sidebar": "#f0f2f8", "popover": "#ffffff", "imageBg": "#f1f2f7", "text": "#282b3d", "muted": "#71788f", "border": "#e7e9f2", "accent": "#7360df", "onAccent": "#ffffff", "success": "#21836a", "warning": "#a56816", "danger": "#c6465c", "info": "#4379c0" },
+  "dark": { "canvas": "#171923", "surface": "#20232f", "surfaceAlt": "#262937", "sidebar": "#1c1e2a", "popover": "#252936", "imageBg": "#262937", "text": "#e7e9f3", "muted": "#a1a7bf", "border": "#303446", "accent": "#a296ff", "onAccent": "#211c3d", "success": "#57caaa", "warning": "#e8b55d", "danger": "#f07c91", "info": "#86b1ef" }
+}

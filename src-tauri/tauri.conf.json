@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "APMM",
+  "version": "0.4.1",
+  "identifier": "com.astral.apmm.next",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../src-release"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "APMM · Astral Party Mod Manager",
+        "width": 1360,
+        "height": 880,
+        "minWidth": 800,
+        "minHeight": 680,
+        "decorations": false,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost http://vault.localhost http://thumb.localhost vault: thumb: data: blob:; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost http://localhost:1420 ws://localhost:1420;"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "msi"
+    ],
+    "icon": [
+      "icons/icon.ico"
+    ]
+  }
+}

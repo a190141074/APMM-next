@@ -1,0 +1,47 @@
+{
+  "name": "apmm-desktop",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "tauri:dev": "node tools/cargo.mjs dev",
+    "rust:check": "node tools/cargo.mjs check",
+    "rust:test": "node tools/cargo.mjs test",
+    "build:portable": "node tools/build-portable.mjs"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "1.1.15",
+    "@radix-ui/react-dropdown-menu": "2.1.16",
+    "@radix-ui/react-popover": "1.1.15",
+    "@radix-ui/react-select": "2.2.6",
+    "@radix-ui/react-tooltip": "1.2.8",
+    "@tanstack/react-query": "5.90.5",
+    "@tanstack/react-virtual": "3.13.12",
+    "@tauri-apps/api": "2.9.0",
+    "@tauri-apps/plugin-dialog": "2.4.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.468.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.17",
+    "@tauri-apps/cli": "2.9.4",
+    "@types/node": "22.10.2",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "playwright": "1.56.1",
+    "prettier": "3.6.2",
+    "tailwindcss": "4.1.17",
+    "typescript": "5.7.2",
+    "vite": "6.4.1",
+    "vitest": "3.2.4"
+  },
+  "license": "GPL-3.0-only"
+}

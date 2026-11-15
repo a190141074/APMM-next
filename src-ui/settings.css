@@ -1,0 +1,191 @@
+/* 设置参考 NapCat 的横向标签、分组引导线与平铺字段，配色继续由 APMM 语义角色控制。 */
+.settings-heading {
+  margin-bottom: 16px;
+}
+.settings-heading h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+.settings-heading p {
+  margin-top: 7px;
+  font-size: 12px;
+}
+.settings-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.settings-nav {
+  display: flex;
+  width: 100%;
+  position: sticky;
+  top: -1px;
+  z-index: 2;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  scrollbar-width: thin;
+}
+.settings-nav button {
+  flex: none;
+  position: relative;
+  padding: 10px 13px 12px;
+  border: 0;
+  border-radius: 5px 5px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--muted);
+}
+.settings-nav button:hover {
+  background: var(--surface-alt);
+}
+.settings-nav button.active {
+  color: var(--text);
+  background: transparent;
+}
+.settings-nav button.active::after {
+  position: absolute;
+  content: "";
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.settings-content {
+  width: 100%;
+  gap: 36px;
+  padding: 4px 1px 24px;
+}
+.settings-content .settings-card {
+  position: relative;
+  background: transparent;
+  padding: 0 0 0 21px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.settings-content .settings-card::before {
+  content: "";
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--border);
+}
+.settings-content .settings-card > h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0 16px -21px;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.settings-content .settings-card > h2 > svg {
+  display: none;
+}
+.settings-content .settings-card > h2::before {
+  width: 2px;
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.settings-content .settings-row {
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+  min-height: 72px;
+}
+.settings-content .settings-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 5px;
+}
+.settings-content .settings-row:nth-child(2) {
+  padding-top: 5px;
+}
+.settings-content .field {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.65fr) minmax(160px, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.settings-content .field.check {
+  display: flex;
+}
+.settings-content .field .input-action {
+  min-width: 0;
+}
+.settings-content .field input {
+  min-width: 0;
+}
+.settings-content .button {
+  box-shadow: none;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+.settings-content .settings-card > p {
+  color: var(--muted);
+  margin: 10px 0;
+}
+.settings-content .settings-row input[type="checkbox"],
+.settings-content .check-field input[type="checkbox"],
+.settings-content .field.check input[type="checkbox"] {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--border);
+  padding: 0;
+  transition: background 120ms;
+  cursor: pointer;
+}
+.settings-content input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: transform 120ms;
+}
+.settings-content input[type="checkbox"]:checked {
+  background: var(--accent) !important;
+}
+.settings-content input[type="checkbox"]:checked::after {
+  transform: translateX(14px);
+  background: var(--on-accent);
+}
+@media (max-width: 760px) {
+  .settings-layout {
+    gap: 22px;
+  }
+  .settings-nav {
+    position: static;
+    gap: 2px;
+  }
+  .settings-nav button {
+    padding-inline: 10px;
+  }
+  .settings-content .settings-card {
+    padding: 0 0 0 15px;
+  }
+  .settings-content .settings-card > h2 {
+    margin-left: -15px;
+  }
+  .settings-content .field {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

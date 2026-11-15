@@ -1,0 +1,999 @@
+{
+  "50010": {
+    "cn": "美工刀",
+    "aliases": [
+      "Art Knife: Beginner",
+      "Art Knife: Enchanted",
+      "Art Knife: Sharp",
+      "美工刀·初级",
+      "美工刀·淬魔",
+      "美工刀·锋利"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "26fb9be47e15d53b052055fd26415d1744a133201f530b8ca524ba9cb4085e4b",
+      "references": [
+        "token_gold_art_knife_enchanted.png",
+        "token_gold_art_knife_sharp.png",
+        "token_purple_art_knife_beginner.png"
+      ]
+    }
+  },
+  "50025": {
+    "cn": "额外电池",
+    "aliases": [
+      "Extra Battery",
+      "额外电池"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "c8ab63f4cc9c0c3076e9e716a57947ab06590c5711c1e4f97dabd1d059acc639",
+      "references": [
+        "token_gold_extra_battery.png"
+      ]
+    }
+  },
+  "50026": {
+    "cn": "会员推荐信",
+    "aliases": [
+      "Member Referral Letter",
+      "会员推荐信"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "e2cedc9fe768094ea0c5d41daf01000884196a54b6bd02a034567b4f04f1b8c0",
+      "references": [
+        "token_purple_members_reference_premium.png"
+      ]
+    }
+  },
+  "50027": {
+    "cn": "维生素药丸",
+    "aliases": [
+      "Vitamin",
+      "维生素"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "f092406cff8e3ab0805ef208e62a53a2eedd48778b4a28c160cd59be4fbf6872",
+      "references": [
+        "token_gold_vitamin.png"
+      ]
+    }
+  },
+  "50028": {
+    "cn": "大背包",
+    "aliases": [
+      "Big Backpack",
+      "大背包"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "ccaf1b6b64c98cec49a8f3f83df2f69605e7f536a4a8a778af2c6f9b9ceb35ca",
+      "references": [
+        "token_purple_big_backpack.png"
+      ]
+    }
+  },
+  "50029": {
+    "cn": "魔法秘典",
+    "aliases": [
+      "Arcane Codex",
+      "魔法秘典"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "d14e7b1fd1e2aab31fb7469336086c1a9ea07dfbfb33351687822b472b4f6d18",
+      "references": [
+        "token_gold_arcane_codex.png"
+      ]
+    }
+  },
+  "50030": {
+    "cn": "手持风扇",
+    "aliases": [
+      "Handheld Fan: Large",
+      "Handheld Fan: Small",
+      "手持风扇·大",
+      "手持风扇·小"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "41810f0d190068442148799de279b29b2f93ca18d0820a1044b7d705d8c1b96c",
+      "references": [
+        "token_blue_handheld_fan_small.png",
+        "token_purple_handheld_fan_large.png"
+      ]
+    }
+  },
+  "50031": {
+    "cn": "智能手表",
+    "aliases": [
+      "Smart Watch",
+      "智能手表"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "bde02b39692d756aba28fba37483b57766d3dbda301f5e2c13694d02b6cbd7b0",
+      "references": [
+        "token_purple_smart_watch.png"
+      ]
+    }
+  },
+  "50032": {
+    "cn": "标记喷罐",
+    "aliases": [
+      "Colorful Spray Can",
+      "Mark Spray Can",
+      "华彩喷罐",
+      "标记喷罐"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a5ecab8227d2abe97b43460ee8cfc6e032db3dfe5a2bcc8326634d904c8c2d8a",
+      "references": [
+        "token_blue_mark_spray_can.png",
+        "token_gold_colorful_spray_can.png"
+      ]
+    }
+  },
+  "50033": {
+    "cn": "可口糖果",
+    "aliases": [
+      "Tasty Candy",
+      "可口糖果"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "0dfa09f1c4ebc34a58448eb9a54741be540b38bb10e074e5c15939eefca0c68d",
+      "references": [
+        "token_purple_tasty_candy.png"
+      ]
+    }
+  },
+  "50034": {
+    "cn": "大碗炖肉",
+    "aliases": [
+      "Big Stew Bowl",
+      "大碗炖肉"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "d0c1442a83faa1c7a87eee68dd89485ebe11514199efbdf2ef9582922ad09638",
+      "references": [
+        "token_gold_big_stew_bowl.png"
+      ]
+    }
+  },
+  "50035": {
+    "cn": "小猪存钱罐",
+    "aliases": [
+      "Blue Piggy Bank",
+      "小猪存钱罐"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "e270b3c04fb11978363bcc9b536c3d213fe3c1a2f80df9a1972dea10ffe52a8a",
+      "references": [
+        "token_blue_piggy_bank.png"
+      ]
+    }
+  },
+  "50036": {
+    "cn": "六面·骰子",
+    "aliases": [
+      "Blue d[blue]6[/blue",
+      "六面·骰子"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "36a6fd4a2234563f1d20f974ca01100aa40f795b80dbf7b08bb534b227a748d6",
+      "references": [
+        "token_blue_die6.png"
+      ]
+    }
+  },
+  "50037": {
+    "cn": "诅咒之剑",
+    "aliases": [
+      "Cursed Sword",
+      "诅咒之剑"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "97d111806e1fd7945cea5d6107e836d4d4d39902c5a21f0999bdcc0e21d43f0b",
+      "references": [
+        "token_exclusive_cursed_sword.png"
+      ]
+    }
+  },
+  "50038": {
+    "cn": "复仇之戟",
+    "aliases": [
+      "Vengeance Halberd",
+      "复仇之戟"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "8f3e91e377262622b7974f81b507294b384693ed9a608130cefc4181ad8bde61",
+      "references": [
+        "token_exclusive_vengeance_halberd.png"
+      ]
+    }
+  },
+  "50039": {
+    "cn": "贯穿之铳",
+    "aliases": [
+      "Piercing Gun",
+      "贯穿之铳"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "961e2166f39f97dd58f4b4de5bd87aa348a27cb70171f3c675f36111590b14e6",
+      "references": [
+        "token_exclusive_piercing_gun.png"
+      ]
+    }
+  },
+  "50040": {
+    "cn": "缓冲盾牌",
+    "aliases": [
+      "Buffer Shield",
+      "缓冲盾牌"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "3573dd12f5701c83ea55a3e5ff7792e4af84581688279e18a8cf5097b2d5709d",
+      "references": [
+        "token_gold_buffer_shield.png"
+      ]
+    }
+  },
+  "50041": {
+    "cn": "友情徽章",
+    "aliases": [
+      "Friendship Badge",
+      "友情徽章"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a86767f421782cbe8216604bd3fdbcfa1c9b8c1d11bebc87f0b3f3336976d1b5",
+      "references": [
+        "token_purple_friendship_badge.png"
+      ]
+    }
+  },
+  "50042": {
+    "cn": "ATM机",
+    "aliases": [
+      "ATM"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "f657de6a9e452d1a32d7252984cde0f65c75a266c53148f6f7c15175e1df9f2b",
+      "references": [
+        "token_blue_atm.png"
+      ]
+    }
+  },
+  "50043": {
+    "cn": "星币锤",
+    "aliases": [
+      "Star Coin Hammer",
+      "星币锤"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "aa3b2ad2ca0b278ca6f338c6c5b449083b8ef15a8e24e0c2a665223869d9181b",
+      "references": [
+        "token_gold_star_coin_hammer.png"
+      ]
+    }
+  },
+  "50044": {
+    "cn": "瞄具",
+    "aliases": [
+      "Basic Scope",
+      "Eagle Eye Scope",
+      "普通瞄具",
+      "鹰眼瞄具"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "9585c7ef5aacf074c9e09d3dcd386a96aafa80f218ec72094d195417e2f8753c",
+      "references": [
+        "token_gold_eagle_eye_scope.png",
+        "token_purple_basic_scope.png"
+      ]
+    }
+  },
+  "50045": {
+    "cn": "忍术飞镖",
+    "aliases": [
+      "Ninja Shuriken",
+      "忍术飞镖"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "ebbf9f7f12efb1d45b267c7656542b05eb39c2f585b735e14826e7bed51acd34",
+      "references": [
+        "token_gold_ninja_shuriken.png"
+      ]
+    }
+  },
+  "50046": {
+    "cn": "标靶",
+    "aliases": [
+      "Target Board",
+      "标靶"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "116c8806420f8d1297b53be3e637e60670e46583573b5029476bb6fb1542bff2",
+      "references": [
+        "token_blue_target_board.png"
+      ]
+    }
+  },
+  "50047": {
+    "cn": "魔法箭袋",
+    "aliases": [
+      "Magic Quiver",
+      "魔法箭袋"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "ad3adc0ed8862105eb297253bfb4fddb2148da32adf34d959d1ca6fcb7ae83a8",
+      "references": [
+        "token_gold_magic_quiver.png"
+      ]
+    }
+  },
+  "50049": {
+    "cn": "佐茶蛋糕",
+    "aliases": [
+      "Zuo Tea Cake",
+      "佐茶蛋糕"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "fc6dc0bf4f54a6ccf92a29dee825c801422caac35f65ea781a5f9e7aa65b4306",
+      "references": [
+        "token_exclusive_zuo_tea_cake.png"
+      ]
+    }
+  },
+  "50050": {
+    "cn": "古老法杖",
+    "aliases": [
+      "Ancient Wand",
+      "古老法杖"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "55ab0dd12ea6df4d12f81631cf1f9a19ee2081d1ced0113d7256e394b81bec95",
+      "references": [
+        "token_exclusive_ancient_wand.png"
+      ]
+    }
+  },
+  "50051": {
+    "cn": "精品剑盾",
+    "aliases": [
+      "Boutique Sword and Shield",
+      "精品剑盾"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "bc89d69ab976720483220880dba57947efc789a7e5ef38551282e0a3b10ad7be",
+      "references": [
+        "token_exclusive_boutique_sword_shield.png"
+      ]
+    }
+  },
+  "50053": {
+    "cn": "大铁锚",
+    "aliases": [
+      "Giant Anchor",
+      "大铁锚"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a55affde8999627cae7c759fad7f70acd3201225e5999f97525ccb215790d2b6",
+      "references": [
+        "token_blue_giant_anchor.png"
+      ]
+    }
+  },
+  "50054": {
+    "cn": "梦想号模型",
+    "aliases": [
+      "Dreama Model",
+      "梦想号模型"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a589c4df8a109a3c86b1a2dfbf794df1549b57153109dccd56d8da12e7cbbd17",
+      "references": [
+        "token_exclusive_dreamship_model.png"
+      ]
+    }
+  },
+  "50055": {
+    "cn": "三叉戟",
+    "aliases": [
+      "Trident",
+      "三叉戟"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a12f597e9b05fbec6d64798598b1d6cebec6369c2f7a248dcb72c9c02cbeb5ae",
+      "references": [
+        "token_exclusive_trident.png"
+      ]
+    }
+  },
+  "50056": {
+    "cn": "惊涛御守",
+    "aliases": [
+      "Storm Talisman",
+      "惊涛御守"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "93ef5fd8058cec8ca1e5bfd39fa2803bdd8f3a1f251c8cd81dcda0ab9f07039a",
+      "references": [
+        "token_exclusive_storm_talisman.png"
+      ]
+    }
+  },
+  "50057": {
+    "cn": "迷幻海鲜汤",
+    "aliases": [
+      "Psychedelic Seafood Soup",
+      "迷幻海鲜汤"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "23eea6d404755cd0ccf7e2bdae9fde8a42bd961da9880e25182b64a1bbb4fd17",
+      "references": [
+        "token_exclusive_psychedelic_seafood_soup.png"
+      ]
+    }
+  },
+  "50058": {
+    "cn": "无限之蛇",
+    "aliases": [
+      "Infinite Snake",
+      "无限之蛇"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "12a05b76d49008478762853ffdd4a4a260c1751ccc751089e024d4b3fec70c4d",
+      "references": [
+        "token_exclusive_infinite_snake.png"
+      ]
+    }
+  },
+  "50059": {
+    "cn": "交错双鲤",
+    "aliases": [
+      "Crossed Twin Carp",
+      "交错双鲤"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "22c58d0f38cfd9535ec05ec91bd5adda0b1a4abfe6bd18ec361995855a7516aa",
+      "references": [
+        "token_exclusive_crossed_twin_carp.png"
+      ]
+    }
+  },
+  "50060": {
+    "cn": "小蛇玩偶",
+    "aliases": [
+      "Little Snake Doll",
+      "小蛇玩偶"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "94e4dd4fe7d6a6f38ef55f0c62c0ebe94fa12571bbf9f8c0335b0f74b6d9408c",
+      "references": [
+        "token_exclusive_little_snake_doll.png"
+      ]
+    }
+  },
+  "50061": {
+    "cn": "小鲤鱼玩偶",
+    "aliases": [
+      "Little Carp Doll",
+      "小鲤鱼玩偶"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "f196072e6462a675c0f8867f64ec755cb79738342131c5deb619068b35984188",
+      "references": [
+        "token_exclusive_little_carp_doll.png"
+      ]
+    }
+  },
+  "50062": {
+    "cn": "计时器",
+    "aliases": [
+      "Timer",
+      "计时器"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "25e1861120af012db9f21f2199984a883114610f020a1a63c5d6020bdd955b75",
+      "references": [
+        "token_exclusive_timer.png"
+      ]
+    }
+  },
+  "50064": {
+    "cn": "糖果会员证",
+    "aliases": [
+      "Candy Membership Card",
+      "糖果会员证"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "64444fd615d365f0ca52d6a039dda4ba599c7dc75a24de3eaf99e95092a8fa89",
+      "references": [
+        "token_exclusive_candy_membership_card.png"
+      ]
+    }
+  },
+  "50065": {
+    "cn": "优雅之羽",
+    "aliases": [
+      "Elegant Feather",
+      "优雅之羽"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "baf79982a515b05a197a048987faf0af895f2bf663837ffee69489575d58ff71",
+      "references": [
+        "token_blue_elegant_feather.png"
+      ]
+    }
+  },
+  "50066": {
+    "cn": "探天卫星",
+    "aliases": [
+      "Exploration Satellite",
+      "探天微星"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "cb9100034c329f5c92fae766d6329dea1f6342c6b86620c69d9dc6ac946ff4ce",
+      "references": [
+        "token_gold_exploration_satellite.png"
+      ]
+    }
+  },
+  "50070": {
+    "cn": "大铜锣",
+    "aliases": [
+      "Bronze Gong",
+      "大铜锣"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "83e8242e45ef0537807a0e9d13f56229bc3f4b305d2c09a3b92ab15c084407d0",
+      "references": [
+        "token_exclusive_bronze_gong.png"
+      ]
+    }
+  },
+  "50072": {
+    "cn": "电击枪",
+    "aliases": [
+      "Stun Gun",
+      "电击枪"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "eac48c4a9dcf95c65add735aaf355a23fb970afd80bb53beda19c0b5ee4a731f",
+      "references": [
+        "token_exclusive_stun_gun.png"
+      ]
+    }
+  },
+  "50073": {
+    "cn": "运动手环",
+    "aliases": [
+      "Fitness Tracker",
+      "运动手环"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "21afd70e908f344aaee5adf4d9dfc8c011ec87e4aa12f7d8c8ed6bc57b7eaca3",
+      "references": [
+        "token_exclusive_fitness_tracker.png"
+      ]
+    }
+  },
+  "50074": {
+    "cn": "时间怀表",
+    "aliases": [
+      "Time Pocket Watch",
+      "时间怀表"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "2670ae668004f9d0bb6e0603f78c96014f84f7ea86831c0f3a5836ab16b2da0b",
+      "references": [
+        "token_exclusive_time_pocket_watch.png"
+      ]
+    }
+  },
+  "50075": {
+    "cn": "自适应核心",
+    "aliases": [
+      "Adaptive Core",
+      "适应核心"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "7a2505e1422e86ea5100abed0cc94772644d378dd8de280d34f8b9828230e539",
+      "references": [
+        "token_exclusive_adaptive_core.png"
+      ]
+    }
+  },
+  "50076": {
+    "cn": "娱乐终端",
+    "aliases": [
+      "Entertainment Terminal",
+      "娱乐终端"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "2d9a74af2a8106f43236775c71ddd59a744bf03db4b6bddd13b734b44a9ddf05",
+      "references": [
+        "token_exclusive_entertainment_terminal.png"
+      ]
+    }
+  },
+  "50077": {
+    "cn": "原初意识",
+    "aliases": [
+      "Original Consciousness",
+      "原初意识"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "626a24dcdb79b6d09405ca2ea4cc10d8e2e0dd5303e929ae94bebf9d517ec563",
+      "references": [
+        "token_exclusive_original_consciousness.png"
+      ]
+    }
+  },
+  "50078": {
+    "cn": "飞星",
+    "aliases": [
+      "Gold Flying Star",
+      "Purple Flying Star",
+      "紫色飞星",
+      "金色飞星"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a765f732bf91f6372a62b8ce5d85a61d2ac17943c68dae49d4ba7684897b61f6",
+      "references": [
+        "token_gold_flying_star.png",
+        "token_purple_flying_star.png"
+      ]
+    }
+  },
+  "50081": {
+    "cn": "书签",
+    "aliases": [
+      "Bookmark",
+      "书签"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "a5ba1b5d5a2adf1f61bc9e9f561a03b971bc74a90f6e949dfc9a24161d9cccfd",
+      "references": [
+        "token_blue_bookmark.png"
+      ]
+    }
+  },
+  "50082": {
+    "cn": "磨刀石",
+    "aliases": [
+      "Sharpening Stone",
+      "磨刀石"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "1e690f3409c8e2015e2a135eb54d8e41220e0ca2010b358e0d0a451c7619e3bb",
+      "references": [
+        "token_purple_sharpening_stone.png"
+      ]
+    }
+  },
+  "50084": {
+    "cn": "能量回收",
+    "aliases": [
+      "Energy Recycler",
+      "能量回收"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "378c20c36c93cd77f821186818e4867fedbc45691337dbf89bde96fd6cb27b47",
+      "references": [
+        "token_blue_energy_recycler.png"
+      ]
+    }
+  },
+  "50085": {
+    "cn": "电流剑",
+    "aliases": [
+      "Electric Blade",
+      "电流剑"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "730c16265e0bd27b82ec86f134ceb7dfe04e367498e20bead314078f2865ae44",
+      "references": [
+        "token_blue_electric_blade.png"
+      ]
+    }
+  },
+  "50086": {
+    "cn": "安全气囊",
+    "aliases": [
+      "Air Bag",
+      "安全气囊"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "f84af419312093ea198ff1b36ff1c9f1b3eb0103a767875136decac65fedea60",
+      "references": [
+        "token_purple_air_bag.png"
+      ]
+    }
+  },
+  "50087": {
+    "cn": "电击手套",
+    "aliases": [
+      "Shock Gloves",
+      "电击手套"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "7c8cbda4a3dc4c0fcb9824b58d8dd53ddfbf377e7950df04de8995a399ba5fd8",
+      "references": [
+        "token_purple_shock_gloves.png"
+      ]
+    }
+  },
+  "50088": {
+    "cn": "跃迁引擎",
+    "aliases": [
+      "Warp Engine",
+      "跃迁引擎"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "65f69541a017fc75963ab642dc2ed16f0d9478b6ad2c66f37a5c409c88d1ce8b",
+      "references": [
+        "token_blue_warp_engine.png"
+      ]
+    }
+  },
+  "50089": {
+    "cn": "电流核心",
+    "aliases": [
+      "Electric Core",
+      "电流核心"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "0401b91503ffeb95801295b1763408aa0c317f60b11adc1a794ac99d61bc249d",
+      "references": [
+        "token_purple_electric_core.png"
+      ]
+    }
+  },
+  "50090": {
+    "cn": "永动机",
+    "aliases": [
+      "Perpetual Motion Machine",
+      "永动机"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "608ca0b71b2a6dac0235dda7480c717e67158415b792ada4604bc9a4b076a102",
+      "references": [
+        "token_gold_perpetual_motion_machine.png"
+      ]
+    }
+  },
+  "50091": {
+    "cn": "电磁炮",
+    "aliases": [
+      "Electromagnetic Gun",
+      "电磁炮"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "1a87cf33211b733ddf28f7e9b505a57546df249cf30228406405f027fced13cc",
+      "references": [
+        "token_gold_electromagnetic_gun.png"
+      ]
+    }
+  },
+  "Attack": {
+    "cn": "拳击手套",
+    "aliases": [
+      "Boxing Glove: Basic",
+      "Boxing Glove: Intermediate",
+      "Boxing Glove: Premium",
+      "True Boxing Gloves",
+      "拳击手套·中级",
+      "拳击手套·初级",
+      "拳击手套·高级",
+      "真·拳击手套"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "291ca5a115c32d1aee9d0e70eb6858243195b8cf61a76a4c49c08cc84001814d",
+      "references": [
+        "token_blue_boxing_glove_general.png",
+        "token_colorful_boxing_glove_real.png",
+        "token_gold_boxing_glove_premium.png",
+        "token_purple_boxing_glove_intermediate.png"
+      ]
+    }
+  },
+  "Defend": {
+    "cn": "摩托头盔",
+    "aliases": [
+      "Blue Motorcycle Helmet",
+      "Gold Motorcycle Helmet",
+      "Purple Motorcycle Helmet",
+      "摩托头盔·一般",
+      "摩托头盔·中级",
+      "摩托头盔·高级"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "f140a60ee96bfe5808363a49ca19d0e389f7d46167da04277b8c142b9e734955",
+      "references": [
+        "token_blue_motorcycle_helmet_general.png",
+        "token_gold_motorcycle_helmet_premium.png",
+        "token_purple_motorcycle_helmet_intermediate.png"
+      ]
+    }
+  },
+  "Enmity": {
+    "cn": "肾上腺素",
+    "aliases": [
+      "Adrenaline: Basic",
+      "Adrenaline: Efficient",
+      "肾上腺素·一般",
+      "肾上腺素·高效"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "ac4ccfbe47d5e3f9a048b1dd8714f3aa142816aef12af82d44f81667bde4eb2b",
+      "references": [
+        "token_gold_adrenaline_efficient.png",
+        "token_purple_adrenaline_general.png"
+      ]
+    }
+  },
+  "Gold": {
+    "cn": "银行卡",
+    "aliases": [
+      "Bank Card: Endless Limit",
+      "Bank Card: High Balance",
+      "Bank Card: Low Balance",
+      "银行卡·余额多",
+      "银行卡·余额少",
+      "银行卡·用不完"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "3ea03d8cb67c7bf3fac02233c7c5a82c3c1d167c720039dc2477fccbb92cb40a",
+      "references": [
+        "token_blue_bank_card_general.png",
+        "token_gold_bank_card_premium.png",
+        "token_purple_bank_card_intermediate.png"
+      ]
+    }
+  },
+  "Heal": {
+    "cn": "医疗箱",
+    "aliases": [
+      "Medical Kit: Complete Treatment",
+      "Medical Kit: Emergency Treatment",
+      "医疗箱·完备治疗",
+      "医疗箱·紧急治疗"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "36e431f07b22c239cae8a059b4cdab0daa7ccfc824bb439b85b79075efd5e30e",
+      "references": [
+        "token_blue_medical_kit_emergency_treatment.png",
+        "token_gold_medical_kit_complete_treatment.png"
+      ]
+    }
+  },
+  "Hp": {
+    "cn": "夹心饼干",
+    "aliases": [
+      "Blue Sandwich Biscuit",
+      "Gold Sandwich Biscuit",
+      "Purple Sandwich Biscuit",
+      "夹心饼干·一般",
+      "夹心饼干·可口",
+      "夹心饼干·美味"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "bb0e31d01d76da31593327204b3ba145faca651ea9c8dfcd0cdb4e31a94db473",
+      "references": [
+        "token_blue_sandwich_biscuit_general.png",
+        "token_gold_sandwich_biscuit_premium.png",
+        "token_purple_sandwich_biscuit_intermediate.png"
+      ]
+    }
+  },
+  "KillReward": {
+    "cn": "手电筒",
+    "aliases": [
+      "Flashlight: Basic",
+      "Flashlight: Flashburst",
+      "Flashlight: Strong Beam",
+      "手电筒·一般",
+      "手电筒·强光",
+      "手电筒·爆闪"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "3da745d042914ec63274e7b25a2fc3f6e0fe9622850e7e357cb4bd2e6884a4af",
+      "references": [
+        "token_blue_flashlight_general.png",
+        "token_gold_flashlight_flashburst.png",
+        "token_purple_flashlight_stronglight.png"
+      ]
+    }
+  },
+  "Speed": {
+    "cn": "速度轮滑",
+    "aliases": [
+      "Speed Roller: Basic",
+      "Speed Roller: Intermediate",
+      "Speed Roller: Premium",
+      "速度滑轮·中级",
+      "速度滑轮·初级",
+      "速度滑轮·高级"
+    ],
+    "evidence": {
+      "method": "equal-rgba-pixels",
+      "sha256": "9b96ddd4252626ee0028279955168175f4e4b020ae24ae63e796e3f7e796280e",
+      "references": [
+        "token_blue_speed_roller_general.png",
+        "token_gold_speed_roller_premium.png",
+        "token_purple_speed_roller_intermediate.png"
+      ]
+    }
+  },
+  "50075_1": {
+    "cn": "自适应核心 · 变体 1",
+    "aliases": [
+      "Adaptive Core",
+      "适应核心"
+    ],
+    "evidence": {
+      "method": "official-resource-variant",
+      "base": "UT_Relic_50075"
+    }
+  }
+}

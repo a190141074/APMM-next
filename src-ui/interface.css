@@ -1,0 +1,223 @@
+/* 统一主题选择器、目录候选和关于页的实用布局。 */
+.comparison > div {
+  min-width: 0;
+}
+.comparison > div > p {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.pan-zoom-image {
+  position: relative;
+  height: clamp(240px, 55vh, 520px);
+  overflow: hidden;
+  background: var(--image-bg);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  border-radius: 8px;
+}
+.pan-zoom-image.dragging {
+  cursor: grabbing;
+}
+.pan-zoom-content {
+  position: absolute;
+  inset: 0;
+  transform-origin: center;
+  pointer-events: none;
+}
+.pan-zoom-content .asset-image {
+  width: 100%;
+  height: 100%;
+}
+.pan-zoom-content img {
+  user-select: none;
+}
+.pan-zoom-hint,
+.pan-zoom-scale {
+  position: absolute;
+  bottom: 8px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  pointer-events: none;
+}
+.pan-zoom-hint {
+  left: 8px;
+}
+.pan-zoom-scale {
+  right: 8px;
+}
+.select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+  flex: none;
+}
+.select-trigger:hover,
+.select-trigger[data-state="open"] {
+  border-color: var(--accent);
+}
+.select-trigger > span {
+  display: inline-flex;
+  align-items: center;
+}
+.search-mode-select {
+  border: 0;
+  background: transparent;
+  padding: 5px 0;
+  min-width: 54px;
+  font-size: 12px;
+}
+.select-content {
+  z-index: 100;
+  min-width: var(--radix-select-trigger-width);
+  max-width: calc(100vw - 24px);
+  max-height: min(320px, var(--radix-select-content-available-height));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 8px 28px var(--shadow-color);
+}
+.select-viewport {
+  padding: 4px;
+}
+.select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+.select-option[data-highlighted] {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.select-scroll {
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+  color: var(--muted);
+}
+.directory-candidate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+.directory-candidate code {
+  flex: 1;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.directory-candidate .button {
+  flex: none;
+}
+.about-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.about-page .page-heading {
+  margin-bottom: 0;
+}
+.about-app {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.about-app img {
+  width: 44px;
+  height: 44px;
+}
+.about-page .settings-card {
+  margin: 0;
+}
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.about-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-size: 12px;
+}
+.credit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.credit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.credit-row > div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.credit-row small {
+  display: block;
+  margin-top: 5px;
+}
+.about-page .settings-card {
+  padding: 16px 20px;
+}
+.about-app > div {
+  flex: 1;
+}
+.about-credit-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.about-page .credit-row {
+  padding: 8px 0;
+}
+.about-page .credit-row:last-child {
+  border-bottom: 0;
+}
+.credit-row > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-size: 12px;
+  flex: none;
+}
+@media (max-width: 1000px) {
+  .about-credit-groups {
+    grid-template-columns: 1fr;
+  }
+}
+.license-text {
+  max-height: 60vh;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.6;
+}

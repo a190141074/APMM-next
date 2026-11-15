@@ -1,0 +1,307 @@
+{
+  "resources": 2187,
+  "sections": 22,
+  "namedChipResources": 67,
+  "unknownNames": [
+    {
+      "key": "hand_card/UT_HandCard_21026",
+      "category": "cards"
+    },
+    {
+      "key": "hand_card/UT_HandCard_21027",
+      "category": "cards"
+    },
+    {
+      "key": "hand_card/UT_HandCard_21028",
+      "category": "cards"
+    },
+    {
+      "key": "hand_card/UT_HandCard_21029",
+      "category": "cards"
+    },
+    {
+      "key": "hand_card/UT_HandCard_21030",
+      "category": "cards"
+    },
+    {
+      "key": "hand_card/UT_HandCard_21031",
+      "category": "cards"
+    },
+    {
+      "key": "card2/UT_Hero_Card2_1061",
+      "category": "heroes"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1003",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1050",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1050_01",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1071",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1072",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1073",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1074",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_profile/UT_Hero_ProfilePhoto_1075",
+      "category": "monsters"
+    },
+    {
+      "key": "thin_card/UT_Hero_ThinCard_1061",
+      "category": "heroes"
+    },
+    {
+      "key": "map_event/UT_MapEvent_31001",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_31002",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_31003",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_31004",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_3100401",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_3100402",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_3100403",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_3100404",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_3100405",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_31005",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_31006",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32066",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32088",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32090",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32103",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32111",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32112",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32121",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32122",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32123",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32131",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32131_sfw",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32132",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32132_sfw",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32133",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32134",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_32134_sfw",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_35061",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_35062",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_35063",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_35064",
+      "category": "cards"
+    },
+    {
+      "key": "map_event/UT_MapEvent_35071",
+      "category": "cards"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1003_0",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1071_0",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1071_0_sfw",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1072_0",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1073_0",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1074_0",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_bust/UT_Monster_Bust_1075_0",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1003",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1050",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1071",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1071_sfw",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1072",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1073",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1074",
+      "category": "monsters"
+    },
+    {
+      "key": "monster_card/UT_Monster_Card_1075",
+      "category": "monsters"
+    },
+    {
+      "key": "relic/UT_Relic_50063",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50067",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50068",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50069",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50071",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50080",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50083",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50092",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50093",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50094",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50095",
+      "category": "chips"
+    },
+    {
+      "key": "relic/UT_Relic_50096",
+      "category": "chips"
+    }
+  ]
+}

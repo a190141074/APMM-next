@@ -1,0 +1,184 @@
+/* 模组信息采用左侧只读对比、右侧紧凑编辑；小窗口自然堆叠并允许滚动。 */
+.mod-info-modal > header {
+  padding: 12px 18px;
+}
+.mod-info-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+  padding: 18px;
+  align-items: start;
+}
+.mod-info-body {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 0;
+  min-width: 0;
+  max-height: calc(88vh - 96px);
+  overflow: auto;
+}
+.mod-info-body .field {
+  margin: 0;
+  gap: 4px;
+  min-width: 0;
+}
+.mod-info-body input,
+.mod-info-body textarea {
+  padding: 7px 9px;
+  font-size: 12px;
+}
+.mod-info-body .button {
+  padding: 7px 9px;
+}
+.mod-info-body .action-row {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+.mod-info-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+.mod-name-editor {
+  flex: 1 1 180px;
+}
+.mod-name-editor > span {
+  display: flex;
+  gap: 6px;
+}
+.mod-name-editor input {
+  flex: 1;
+  width: 0;
+}
+.mod-info-heading > .action-row {
+  flex: none;
+}
+.mod-file-details,
+.mod-credit-details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 12px;
+  min-width: 0;
+}
+.mod-file-details summary,
+.mod-credit-details summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.mod-file-details .resource-code {
+  margin: 6px 0 0;
+  padding: 7px;
+}
+.mod-credit-fields {
+  display: grid;
+  gap: 8px;
+}
+.mod-info-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(80px, 0.55fr);
+  gap: 8px;
+}
+.source-link-field {
+  grid-column: 1 / -1;
+}
+.credit-link-input {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+.credit-link-input input {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+}
+.credit-link-editor {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+.credit-link-editor > .text-button {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mod-credit-details > .field {
+  margin-top: 7px;
+}
+.mod-credit-fields textarea {
+  resize: vertical;
+  min-height: 52px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+}
+.mod-info-body h3 {
+  font-size: 13px;
+}
+.mod-info-body .slot-select {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.mod-info-body .inline-notice {
+  margin: 0;
+  padding: 10px;
+}
+.mod-info-body .inline-notice p {
+  font-size: 12px;
+}
+.mod-info-previews {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.mod-preview {
+  min-width: 0;
+}
+.mod-preview-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.mod-preview .pan-zoom-image {
+  height: 230px;
+}
+.mod-preview > small {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+.mod-preview-expanded {
+  padding: 18px;
+}
+.mod-preview-expanded .pan-zoom-image {
+  height: min(620px, 68vh);
+}
+@media (max-width: 900px) {
+  .mod-info-layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+    gap: 14px;
+  }
+  .mod-info-previews {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mod-preview .pan-zoom-image {
+    height: 190px;
+  }
+  .mod-info-body {
+    max-height: none;
+    overflow: visible;
+  }
+  .mod-info-heading {
+    flex-wrap: nowrap;
+  }
+}

@@ -1,0 +1,171 @@
+/* 资源列表压缩为实用工具栏，任务浮层沿用主题并独立滚动。 */
+.workspace-header {
+  height: 55px;
+}
+.main-content:has(> .resource-page) {
+  padding-top: 16px;
+}
+.resource-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 12px;
+  flex: none;
+}
+.resource-heading h1 {
+  font-size: 22px;
+  white-space: nowrap;
+}
+.resource-toolbar .filterbar {
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+}
+.resource-toolbar .button,
+.resource-toolbar select,
+.resource-toolbar .segments {
+  flex-shrink: 0;
+}
+.resource-toolbar .segments button {
+  padding: 6px 9px;
+}
+.task-trigger {
+  position: relative;
+  flex: none;
+}
+.task-trigger[data-state="open"] {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.task-count {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  min-width: 15px;
+  padding: 1px 3px;
+  border-radius: 8px;
+  color: var(--surface);
+  background: var(--accent);
+  font-size: 9px;
+  line-height: 13px;
+}
+.task-popover {
+  z-index: 50;
+  width: min(420px, calc(100vw - 24px));
+  max-height: min(560px, var(--radix-popover-content-available-height));
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 36px var(--shadow-color);
+  overflow: hidden;
+}
+.task-popover-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+.task-popover-heading h2 {
+  font-size: 14px;
+}
+.task-popover-heading > span {
+  flex: 1;
+  font-size: 11px;
+  color: var(--muted);
+}
+.task-popover-scroll {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.task-popover .task-list {
+  gap: 0;
+}
+.task-popover .task-card {
+  padding: 14px 16px;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+.task-popover .task-card:last-child {
+  border-bottom: 0;
+}
+.task-popover .task-icon {
+  padding: 6px;
+  border-radius: 8px;
+}
+.task-popover .task-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.task-popover .section-heading {
+  margin-bottom: 5px;
+  gap: 8px;
+  align-items: flex-start;
+}
+.task-popover h3 {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.task-popover .badge {
+  flex: none;
+}
+.task-popover .task-body progress {
+  display: block;
+  margin: 8px 0;
+}
+.task-controls {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.task-controls:empty {
+  display: none;
+}
+.task-controls .button {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+.task-empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 30px 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.task-empty strong {
+  color: var(--text);
+}
+.task-load-error {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.task-popover .inline-notice {
+  margin: 0;
+  padding: 10px 16px;
+  flex: none;
+  font-size: 12px;
+}
+@media (max-width: 1000px) {
+  .resource-toolbar {
+    gap: 10px;
+  }
+  .resource-toolbar .filterbar {
+    flex-basis: 100%;
+  }
+}

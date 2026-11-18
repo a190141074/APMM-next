@@ -2,19 +2,22 @@ import { AppearanceSettingsPanel } from "./AppearanceSettingsPanel";
 import { ThemesPanel } from "./ThemesPanel";
 import { UpdateSettings } from "./UpdateSettings";
 const categories = [
+  ["directories", "目录与资源"],
   ["appearance", "外观"],
   ["colors", "配色"],
-  ["directories", "目录与资源"],
+  ["workshop", "工坊"],
   ["updates", "更新"],
   ["maintenance", "安全与维护"],
+  ["about", "关于"],
 ];
 import { MaintenancePanel } from "./MaintenancePanel";
 import { IPC } from "../core/ipc/commands";
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { FolderOpen, Download, Archive, ShieldCheck, Copy } from "lucide-react";
 import type { WorkspaceSnapshot } from "../core/ipc/generated/WorkspaceSnapshot";
 import { useActions } from "../hooks/useApp";
-import { Modal, Badge } from "../shared/Ui";
+import { Modal, Badge, Loading } from "../shared/Ui";
+const AboutPage = lazy(() => import("./AboutPage"));
 import { bytes } from "../core/domain/resources";
 export function SettingsPage({
   snapshot,
@@ -25,7 +28,7 @@ export function SettingsPage({
 }) {
   const { api, act, busy, notice } = useActions();
   const [migration, setMigration] = useState<any>(null);
-  const [category, setCategory] = useState("appearance");
+  const [category, setCategory] = useState("directories");
 
   const [password, setPassword] = useState("");
 
@@ -91,6 +94,35 @@ export function SettingsPage({
           key={category}
         >
           {category === "colors" && <ThemesPanel />}
+          {category === "about" && (
+            <Suspense fallback={<Loading />}>
+              <AboutPage version={snapshot.version} embedded />
+            </Suspense>
+          )}
+          {category === "workshop" && (
+            <section className="settings-card">
+              <h2>作者模式</h2>
+              <label className="settings-row">
+                <span>
+                  作者模式
+                  <small>
+                    开启后在导航中显示投稿入口。本地编辑和导出投稿包，通过约定渠道交给维护者审核。
+                  </small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.authorMode || false}
+                  disabled={busy}
+                  onChange={(event) =>
+                    void act(
+                      () => api.settings({ authorMode: event.target.checked }),
+                      "作者模式已保存",
+                    )
+                  }
+                />
+              </label>
+            </section>
+          )}
           {category === "directories" && (
             <section className="settings-card">
               <h2>

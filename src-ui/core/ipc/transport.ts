@@ -3,6 +3,7 @@ import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open, save } from "@tauri-apps/plugin-dialog";
+import type { DropEvent } from "../domain/dropImport";
 export const native = "__TAURI_INTERNALS__" in window;
 export { invoke, listen };
 export function imageUrl(
@@ -26,7 +27,13 @@ export async function pickDirectory() {
   return native ? await open({ directory: true, multiple: false }) : null;
 }
 export async function pickFiles(
-  kind: "images" | "packages" | "plugins" | "all" = "all",
+  kind:
+    | "images"
+    | "packages"
+    | "plugins"
+    | "author"
+    | "credentials"
+    | "all" = "all",
 ) {
   return native
     ? await open({
@@ -35,13 +42,17 @@ export async function pickFiles(
           {
             name: "资源文件",
             extensions:
-              kind === "plugins"
-                ? ["zip"]
-                : kind === "images"
-                  ? ["png"]
-                  : kind === "packages"
-                    ? ["apmod"]
-                    : ["png", "apmod"],
+              kind === "credentials"
+                ? ["apmmkey"]
+                : kind === "author"
+                  ? ["png", "zip", "apmod"]
+                  : kind === "plugins"
+                    ? ["zip"]
+                    : kind === "images"
+                      ? ["png"]
+                      : kind === "packages"
+                        ? ["apmod"]
+                        : ["png", "apmod"],
           },
         ],
       })
@@ -55,10 +66,49 @@ export async function windowAction(
 ) {
   if (native) await getCurrentWindow()[action]();
 }
-export async function fileDrop(callback: (paths: string[]) => void) {
-  return native
-    ? getCurrentWindow().onDragDropEvent((e) => {
-        if (e.payload.type === "drop") callback(e.payload.paths);
-      })
-    : () => {};
+export async function fileDrop(callback: (event: DropEvent) => void) {
+  if (native)
+    return getCurrentWindow().onDragDropEvent((e) => {
+      const payload = e.payload;
+      callback({
+        type: payload.type,
+        paths: "paths" in payload ? payload.paths : undefined,
+        position:
+          "position" in payload
+            ? {
+                x: payload.position.x / window.devicePixelRatio,
+                y: payload.position.y / window.devicePixelRatio,
+              }
+            : undefined,
+      });
+    });
+  let depth = 0;
+  const handler = (event: DragEvent) => {
+    if (!event.dataTransfer?.types.includes("Files")) return;
+    event.preventDefault();
+    if (event.type === "dragenter") depth++;
+    if (event.type === "dragleave" && --depth > 0) return;
+    if (event.type === "dragleave" || event.type === "drop") depth = 0;
+    callback({
+      type:
+        event.type === "dragenter"
+          ? "enter"
+          : event.type === "dragover"
+            ? "over"
+            : event.type === "dragleave"
+              ? "leave"
+              : "drop",
+      paths:
+        event.type === "drop"
+          ? [...event.dataTransfer.files].map((file) => file.name)
+          : undefined,
+      position: { x: event.clientX, y: event.clientY },
+    });
+  };
+  for (const type of ["dragenter", "dragover", "dragleave", "drop"])
+    window.addEventListener(type, handler as EventListener);
+  return () => {
+    for (const type of ["dragenter", "dragover", "dragleave", "drop"])
+      window.removeEventListener(type, handler as EventListener);
+  };
 }

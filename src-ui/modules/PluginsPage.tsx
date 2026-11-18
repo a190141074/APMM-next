@@ -328,59 +328,7 @@ export function PluginsPage({ route }: { route: Route }) {
             ))}
           </section>
         </>
-      ) : data?.works?.length ? (
-        <div className="workshop-grid">
-          {data.works.map((entry: any) => {
-            const w = entry.work || entry;
-            return (
-              <article className="workshop-card" key={w.id}>
-                <AssetImage path={w.coverDataUrl || null} label={w.title} />
-                <div>
-                  <h3>{w.title}</h3>
-                  <p>{w.description}</p>
-                  <div className="action-row">
-                    <Badge>{w.version}</Badge>
-                    <button
-                      className="button primary"
-                      onClick={() =>
-                        void run("workshop-install", "安装工坊作品", {
-                          id: w.id,
-                        })
-                      }
-                    >
-                      {entry.installedVersion ? "更新" : "安装"}
-                    </button>
-                    {entry.installedVersion && (
-                      <button
-                        className="button"
-                        onClick={() =>
-                          setConfirmation(
-                            () => () =>
-                              api.task("workshop-uninstall", "卸载工坊作品", {
-                                id: w.id,
-                              }),
-                          )
-                        }
-                      >
-                        卸载
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        <Empty
-          title={q.isPending ? "正在连接工坊" : "工坊暂时没有可显示的作品"}
-          detail={q.error ? String(q.error) : data?.message}
-        >
-          <button className="button" onClick={() => void q.refetch()}>
-            重新加载
-          </button>
-        </Empty>
-      )}
+      ) : null}
       {confirmation && (
         <Modal open title="确认操作" onClose={() => setConfirmation(null)}>
           <div className="wizard-body">

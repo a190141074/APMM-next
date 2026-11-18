@@ -1,23 +1,27 @@
 import { ResourceDetail } from "./ResourceDetail";
+import { ResourceList } from "./ResourceList";
+import { ResourceGroupCard } from "./ResourceGroupCard";
+import {
+  resourceSizes,
+  resourceSizeStyle,
+  resourceSizeOptions,
+  type ResourceSize,
+} from "../core/domain/resourcePresentation";
+import { useResourceLayout } from "../hooks/useResourceLayout";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-  Check,
-  SlidersHorizontal,
   LayoutGrid,
-  Maximize2,
-  Image,
+  List,
   Undo2,
   Download,
   FolderOpen,
-  ChevronRight,
   CheckSquare,
-  Trash2,
-  Power,
 } from "lucide-react";
 import type { ResourceRecord } from "../core/ipc/generated/ResourceRecord";
 import {
   filterResources,
+  filterResourceGroups,
   groupResources,
   labels,
   type Route,
@@ -27,14 +31,14 @@ import {
   storageCategory,
 } from "../core/domain/resources";
 import { useActions } from "../hooks/useApp";
-import { AssetImage, Empty, Modal, Badge } from "../shared/Ui";
+import { Empty } from "../shared/Ui";
 import { ThemedSelect } from "../shared/ThemedSelect";
 const memory = new Map<
   string,
   {
     filter: Filter;
     section: string;
-    size: string;
+    size: ResourceSize;
     scroll: number;
     selected: string[];
   }
@@ -44,6 +48,7 @@ export function ResourcePage({
   search,
   resources,
   searchMode = "smart",
+  onSearchClear,
   focusKey,
   onFocusClear,
 }: {
@@ -51,19 +56,25 @@ export function ResourcePage({
   search: string;
   resources: ResourceRecord[];
   searchMode?: SearchMode;
+  onSearchClear?: () => void;
   focusKey?: string;
   onFocusClear?: () => void;
 }) {
   const initial = memory.get(route);
   const [filter, setFilter] = useState<Filter>(initial?.filter || "all");
   const [section, setSection] = useState(initial?.section || "");
-  const [size, setSize] = useState(initial?.size || "medium");
+  const [size, setSize] = useState<ResourceSize>(initial?.size || "medium");
   const [selected, setSelected] = useState<Set<string>>(
     new Set(initial?.selected),
   );
   const [detail, setDetail] = useState<string | null>(null);
-  const { api, act, busy, notice, setNotice } = useActions();
+  const { api, act, notice, setNotice } = useActions();
   const scroll = useRef<HTMLDivElement>(null);
+  const {
+    layout,
+    change: changeLayout,
+    rememberScroll,
+  } = useResourceLayout(scroll, route, initial?.scroll || 0);
   const scrollPosition = useRef(initial?.scroll || 0);
   const [width, setWidth] = useState(900);
   const filtered = useMemo(
@@ -72,16 +83,32 @@ export function ResourcePage({
     [resources, route, search, filter, section, searchMode],
   );
   const groups = useMemo(
-    () => groupResources(filtered, route),
-    [filtered, route],
+    () =>
+      filterResourceGroups(
+        resources,
+        route,
+        search,
+        filter,
+        section,
+        searchMode,
+      ),
+    [resources, route, search, filter, section, searchMode],
   );
+  const compact = layout === "compact";
   const columns = Math.max(
-    2,
-    Math.floor(width / (size === "large" ? 270 : size === "small" ? 165 : 215)),
+    1,
+    Math.floor(
+      width /
+        (compact
+          ? resourceSizes[size].heroCardWidth
+          : resourceSizes[size].cardWidth),
+    ),
   );
-  const height = size === "large" ? 320 : size === "small" ? 230 : 280;
+  const height = compact
+    ? resourceSizes[size].heroRowHeight
+    : resourceSizes[size].cardHeight;
   const virtual = useVirtualizer({
-    count: Math.ceil(groups.length / columns),
+    count: layout !== "list" ? Math.ceil(groups.length / columns) : 0,
     getScrollElement: () => scroll.current,
     estimateSize: () => height,
     overscan: 2,
@@ -95,7 +122,6 @@ export function ResourcePage({
     if (!el) return;
     const observer = new ResizeObserver(() => setWidth(el.clientWidth));
     observer.observe(el);
-    el.scrollTop = initial?.scroll || 0;
     return () => observer.disconnect();
   }, []);
   useEffect(
@@ -140,7 +166,9 @@ export function ResourcePage({
         <div className="resource-heading">
           <h1>
             {labels[route]}
-            <span className="heading-count">{groups.length}</span>
+            <span className="heading-count">
+              {layout === "list" ? filtered.length : groups.length}
+            </span>
           </h1>
         </div>
         <div className="filterbar">
@@ -170,15 +198,37 @@ export function ResourcePage({
             ]}
           />
           <div className="spacer" />
+          <div
+            className="resource-view-mode"
+            role="group"
+            aria-label="资源布局"
+          >
+            <button
+              title={route === "heroes" ? "紧凑模式" : "列表模式"}
+              aria-label={route === "heroes" ? "紧凑模式" : "列表模式"}
+              aria-pressed={
+                layout === (route === "heroes" ? "compact" : "list")
+              }
+              onClick={() =>
+                changeLayout(route === "heroes" ? "compact" : "list")
+              }
+            >
+              <List size={16} />
+            </button>
+            <button
+              title="卡片模式"
+              aria-label="卡片模式"
+              aria-pressed={layout === "grid"}
+              onClick={() => changeLayout("grid")}
+            >
+              <LayoutGrid size={16} />
+            </button>
+          </div>
           <ThemedSelect
             value={size}
-            onValueChange={setSize}
+            onValueChange={(value) => setSize(value as ResourceSize)}
             label="预览尺寸"
-            options={[
-              { value: "small", label: "小图" },
-              { value: "medium", label: "中图" },
-              { value: "large", label: "大图" },
-            ]}
+            options={resourceSizeOptions}
           />
           <button
             className="icon-button"
@@ -259,15 +309,28 @@ export function ResourcePage({
       )}
       <div
         className="resource-scroll"
+        data-layout={layout}
+        style={resourceSizeStyle(size)}
         ref={scroll}
         onScroll={(e) => {
           scrollPosition.current = e.currentTarget.scrollTop;
+          rememberScroll(e.currentTarget.scrollTop);
         }}
       >
         {!groups.length ? (
           <Empty
             title="还没有找到资源"
             detail="调整筛选条件，导入 Mod，或安装辅助插件提取游戏原图。"
+          />
+        ) : layout === "list" ? (
+          <ResourceList
+            rows={filtered}
+            scrollRef={scroll}
+            size={size}
+            width={width}
+            selected={selected}
+            onSelect={toggle}
+            onMore={setDetail}
           />
         ) : (
           <div style={{ height: virtual.getTotalSize(), position: "relative" }}>
@@ -283,69 +346,17 @@ export function ResourcePage({
               >
                 {groups
                   .slice(v.index * columns, (v.index + 1) * columns)
-                  .map((g) => {
-                    const r =
-                      g.resources.find(
-                        (x) =>
-                          x.section === "card" || x.section === "monster_card",
-                      ) || g.resources[0];
-                    const mods = g.resources.reduce(
-                      (n, x) => n + x.files.length,
-                      0,
-                    );
-                    const applied = g.resources.some((x) => x.activeHash);
-                    return (
-                      <article
-                        key={g.key}
-                        className={`resource-card ${selected.has(g.key) ? "selected" : ""}`}
-                      >
-                        <button
-                          className={`select-mark ${selected.has(g.key) ? "checked" : ""}`}
-                          aria-label={`选择 ${r.entityName}`}
-                          onClick={() => toggle(g.key)}
-                        >
-                          {selected.has(g.key) && <Check size={13} />}
-                        </button>
-                        <button
-                          className="resource-open"
-                          onClick={() => setDetail(g.key)}
-                        >
-                          <AssetImage
-                            thumbnail
-                            path={r.originalUrl || r.files[0]?.path}
-                            revision={
-                              !r.originalUrl ? r.files[0]?.hash : undefined
-                            }
-                            label={r.entityName}
-                            status={r.originalStatus}
-                          />
-                          <div className="resource-caption">
-                            <div>
-                              <strong>{r.entityName}</strong>
-                              <span>
-                                {route === "heroes" || route === "monsters"
-                                  ? `#${r.entityId} · ${g.resources.length} 个部位`
-                                  : r.canonical}
-                              </span>
-                            </div>
-                            <ChevronRight size={15} />
-                          </div>
-                        </button>
-                        <div className="resource-footer">
-                          <span>{mods ? `${mods} 个 Mod` : "无 Mod"}</span>
-                          {applied ? (
-                            <Badge tone="success">已应用</Badge>
-                          ) : (
-                            <span className="muted">
-                              {route === "lands" || route === "cursors"
-                                ? `${g.resources.length}/2`
-                                : "原版"}
-                            </span>
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
+                  .map((g) => (
+                    <ResourceGroupCard
+                      key={g.key}
+                      group={g}
+                      route={route}
+                      compact={compact}
+                      selected={selected.has(g.key)}
+                      onSelect={() => toggle(g.key)}
+                      onOpen={() => setDetail(g.key)}
+                    />
+                  ))}
               </div>
             ))}
           </div>
@@ -354,6 +365,16 @@ export function ResourcePage({
       {detailGroup && (
         <ResourceDetail
           resources={detailGroup.resources}
+          filter={filter}
+          section={section}
+          search={search}
+          searchMode={searchMode}
+          size={size}
+          onClearFilters={() => {
+            setFilter("all");
+            setSection("");
+            onSearchClear?.();
+          }}
           focusKey={focusKey}
           onClose={() => {
             setDetail(null);

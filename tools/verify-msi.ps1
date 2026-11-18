@@ -1,7 +1,12 @@
 # 管理展开仅把 MSI 内容提取到独立工作目录，不注册产品或覆盖现有安装。
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
-$report = Get-Content -LiteralPath (Join-Path $projectRoot 'verification-distributions.json') -Raw | ConvertFrom-Json
+$sourceVersion = (Get-Content -LiteralPath (Join-Path $projectRoot 'VERSION') -Raw).Trim()
+$workRoot = if ($env:APMM_WORK_DIR) { $env:APMM_WORK_DIR } else { 'B:\APMM-next-work' }
+$reportsRoot = if ($env:APMM_REPORT_DIR) { $env:APMM_REPORT_DIR } else { Join-Path $workRoot ('reports/' + $sourceVersion) }
+$inputReport = if ($env:APMM_DISTRIBUTIONS_REPORT) { $env:APMM_DISTRIBUTIONS_REPORT } else { Join-Path $reportsRoot 'distributions.json' }
+$report = Get-Content -LiteralPath $inputReport -Raw | ConvertFrom-Json
+if ($report.version -ne $sourceVersion) { throw 'MSI 验收报告不是当前源码版本' }
 $package = ($report.artifacts | Where-Object kind -eq 'msi').path
 $work = if ($env:APMM_WORK_DIR) { $env:APMM_WORK_DIR } else { 'B:\APMM-next-work' }
 $area = Join-Path $work ('msi-validation\' + [guid]::NewGuid())
@@ -35,5 +40,5 @@ foreach ($file in $report.msiFiles) {
     if ((Get-Item -LiteralPath $path).Length -ne $file.bytes -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $file.sha256) { throw "MSI 内容不一致：$($file.path)" }
 }
 $result = [ordered]@{ version=$version; area=$area; installRoot=$installRoot; product=$product; upgradeCode=$upgrade; filesVerified=$report.msiFiles.Count; administrativeExtraction=$true; registeredInstallTested=$false; signature=(Get-AuthenticodeSignature -LiteralPath $package).Status.ToString() }
-$result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $projectRoot 'verification-msi.json') -Encoding utf8
+$result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $reportsRoot 'msi-audit.json') -Encoding utf8
 $result | ConvertTo-Json -Depth 5

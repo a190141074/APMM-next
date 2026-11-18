@@ -1,0 +1,97 @@
+/* 总览版本卡片复用主题语义色，保持窄窗口下的文字与点击区域。 */
+.overview-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.overview-version-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.overview-version-card {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+.overview-version-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-alt);
+}
+.overview-version-card > img,
+.version-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+.version-icon {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.overview-version-card strong {
+  display: block;
+  font-size: 13px;
+}
+.overview-version-card small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin-top: 3px;
+}
+.overview-version-card > svg {
+  color: var(--muted);
+}
+.version-state {
+  grid-column: 1/-1;
+  font-size: 10px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.version-state.update {
+  color: var(--warning);
+}
+.overview-side .social-card {
+  flex: 1;
+}
+
+/* 选中和悬停分别表达状态，边框始终占位，切换时不改变尺寸。 */
+.segmented-tabs button[aria-selected="true"],
+.settings-nav button.active,
+.author-tabs button[aria-selected="true"] {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.settings-nav button,
+.author-tabs button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.settings-nav button.active::after {
+  display: none;
+}
+.segmented-tabs button:focus-visible,
+.settings-nav button:focus-visible,
+.author-tabs button:focus-visible,
+.overview-version-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.resource-card.selected,
+.quick-card.selected,
+.scheme-card.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}

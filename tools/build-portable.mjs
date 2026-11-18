@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
+import { releaseDir, reportDir, prepareParent } from "./work-paths.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const work = process.env.APMM_WORK_DIR || "B:/APMM-next-work";
 const stage = path.resolve(work, "portable-build", randomUUID());
@@ -30,11 +31,24 @@ function run(args, extra = {}) {
   const r = spawnSync(process.execPath, args, {
     cwd: root,
     env: { ...env, ...extra },
+    windowsHide: true,
     stdio: "inherit",
   });
   if (r.status !== 0) throw Error(`构建失败：${args.join(" ")}`);
 }
 const version = readFileSync(path.join(root, "VERSION"), "utf8").trim();
+const zip = prepareParent(
+  path.join(
+    releaseDir,
+    "windows-x86_64",
+    `APMM-${version}-windows-x86_64-portable.zip`,
+  ),
+);
+const reportPath = prepareParent(
+  process.env.APMM_BUILD_REPORT || path.join(reportDir, "portable-build.json"),
+);
+if (existsSync(zip) || existsSync(reportPath))
+  throw Error("产物或报告已存在，请使用新的隔离输出目录");
 const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
 const config = JSON.parse(
   readFileSync(path.join(root, "src-tauri/tauri.conf.json"), "utf8"),
@@ -44,6 +58,33 @@ if (pkg.version !== version || config.version !== version)
 if (!readFileSync("CHANGELOG.md", "utf8").includes(version))
   throw Error("缺少当前版本更新说明");
 run(["tools/sync-ipc.mjs"]);
+const programPaths = ["src-ui", "src-tauri/src", "config", "public"];
+const collectInputs = (directory) =>
+  readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
+    entry.isDirectory()
+      ? collectInputs(path.join(directory, entry.name))
+      : [path.join(directory, entry.name)],
+  );
+const inputFiles = [
+  ...programPaths.flatMap((directory) =>
+    collectInputs(path.join(root, directory)),
+  ),
+  ...[
+    "VERSION",
+    "package.json",
+    "pnpm-lock.yaml",
+    "src-tauri/Cargo.toml",
+    "src-tauri/Cargo.lock",
+    "src-tauri/tauri.conf.json",
+    "src-tauri/build.rs",
+  ].map((file) => path.join(root, file)),
+];
+const inputHash = (file) =>
+  createHash("sha256").update(readFileSync(file)).digest("hex");
+const sourceInputs = inputFiles.sort().map((file) => ({
+  path: path.relative(root, file).replaceAll("\\", "/"),
+  sha256: inputHash(file),
+}));
 run(["node_modules/typescript/bin/tsc", "--noEmit"]);
 run(["node_modules/vite/bin/vite.js", "build", "--outDir", frontend]);
 const files = (dir) =>
@@ -94,7 +135,10 @@ for (const name of names) {
   copyFileSync(source, path.join(payload, name));
 }
 const hash = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
-writeFileSync(path.join(payload, "installation.json"), JSON.stringify({ schema: 1, kind: "portable" }));
+writeFileSync(
+  path.join(payload, "installation.json"),
+  JSON.stringify({ schema: 1, kind: "portable" }),
+);
 names.push("installation.json");
 const manifest = {
   schema: 1,
@@ -115,14 +159,18 @@ const audit = files(payload).map((f) =>
 );
 if (audit.some((f) => !names.includes(f) && f !== "release-manifest.json"))
   throw Error("发行包包含非程序文件");
-const dist = path.join(root, "dist");
-mkdirSync(dist, { recursive: true });
-const zip = path.join(dist, `APMM-${version}-windows-x86_64-portable.zip`);
+if (
+  sourceInputs.some(
+    (file) => inputHash(path.join(root, file.path)) !== file.sha256,
+  )
+)
+  throw Error("构建期间程序输入发生变化，请重新构建，不生成混合版本发行包");
+
 const python = path.join(root, "plugins/asset-tool/.venv/Scripts/python.exe");
 const archive = spawnSync(
   python,
   ["-X", "utf8", "-B", "tools/archive.py", payload, zip],
-  { cwd: root, env, stdio: "inherit" },
+  { cwd: root, env, windowsHide: true, stdio: "inherit" },
 );
 if (archive.status !== 0) throw Error("ZIP 生成失败");
 const report = {
@@ -133,16 +181,14 @@ const report = {
   bytes: statSync(zip).size,
   sha256: hash(zip),
   files: manifest.files,
+  sourceInputs,
   frontend: frontendFiles.map((f) => ({
     path: path.relative(frontend, f),
     bytes: statSync(f).size,
   })),
   excludes: ["用户数据", "游戏原图", "Python", "资产插件运行时", "前端源码"],
 };
-writeFileSync(
-  path.join(root, "verification-portable-build.json"),
-  JSON.stringify(report, null, 2),
-);
+writeFileSync(reportPath, JSON.stringify(report, null, 2));
 writeFileSync(
   zip + ".sha256",
   report.sha256 + "  " + path.basename(zip) + "\n",

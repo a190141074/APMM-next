@@ -284,6 +284,8 @@ pub(crate) struct HeroEntry {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Settings {
     #[serde(default)]
+    pub(crate) author_mode: bool,
+    #[serde(default)]
     pub(crate) appearance: Option<crate::appearance::AppearanceSettings>,
     #[serde(default)]
     pub(crate) modimg_path: String,
@@ -576,7 +578,8 @@ pub(crate) fn migrate_map(map: &mut HashMap<String, HeroEntry>, vd: &Path, chang
                     continue;
                 };
                 for f in res.files.iter_mut() {
-                    if !f.rel_path.is_empty() && vd.join(&f.rel_path).exists() {
+                    // 已有路径即使暂时缺失也交给目录同步关联，不能抢先抹掉外部重命名线索。
+                    if !f.rel_path.is_empty() {
                         continue;
                     }
                     let old = vd.join(format!("{}{}", f.hash, f.ext));

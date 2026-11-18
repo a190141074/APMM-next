@@ -210,7 +210,24 @@ pub(crate) fn effective_outimg_dir(settings: &Settings) -> Option<PathBuf> {
         return Some(PathBuf::from(settings.outimg_path.trim()));
     }
     let modimg = PathBuf::from(settings.modimg_path.trim());
-    modimg.parent().map(|parent| parent.join("outimg"))
+    modimg
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .map(|parent| parent.join("outimg"))
+}
+
+/// 定位入口同时支持旧版导出的目录和新版插件的提取目录。
+pub(crate) fn outimg_dirs(settings: &Settings) -> impl Iterator<Item = PathBuf> {
+    effective_outimg_dir(settings)
+        .into_iter()
+        .chain(std::iter::once(data_dir().join("assets/outimg")))
+}
+
+pub(crate) fn outimg_roots(settings: &Settings) -> Vec<PathBuf> {
+    outimg_dirs(settings)
+        .filter_map(|dir| dir.canonicalize().ok())
+        .filter(|dir| dir.is_dir())
+        .collect()
 }
 
 pub(crate) fn outimg_file_for(
@@ -218,17 +235,29 @@ pub(crate) fn outimg_file_for(
     canonical: &str,
     original_url: Option<&String>,
 ) -> Option<PathBuf> {
-    let root = effective_outimg_dir(settings)?;
-    let canonical = safe_relative_path(canonical)?;
-    let mut candidates = vec![root.join(&canonical).with_extension("png")];
-    if let Some(url) = original_url {
-        let normalized_url = url.replace('\\', "/");
-        let name = normalized_url.rsplit('/').next().unwrap_or("");
-        if !name.is_empty() {
-            candidates.push(root.join(safe_relative_path(name)?));
-        }
-    }
-    candidates.into_iter().find(|path| path.is_file())
+    locate_outimg(
+        &outimg_roots(settings),
+        canonical,
+        original_url.map(String::as_str),
+    )
+}
+
+pub(crate) fn locate_outimg(
+    roots: &[PathBuf],
+    canonical: &str,
+    original_url: Option<&str>,
+) -> Option<PathBuf> {
+    let canonical_png = safe_relative_path(&format!("{canonical}.png"))?;
+    let fallback = original_url
+        .and_then(|url| url.rsplit(['/', '\\']).next())
+        .and_then(safe_relative_path)
+        .filter(|name| name != &canonical_png);
+    roots.iter().find_map(|root| {
+        std::iter::once(&canonical_png)
+            .chain(fallback.as_ref())
+            .filter_map(|name| root.join(name).canonicalize().ok())
+            .find(|file| file.starts_with(root) && file.is_file())
+    })
 }
 
 #[derive(Debug, Serialize)]

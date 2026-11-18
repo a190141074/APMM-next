@@ -6,7 +6,13 @@ import notices from "../../THIRD_PARTY_NOTICES.md?raw";
 import { parseCredits, creditGroups } from "../core/domain/credits";
 import { useActions } from "../hooks/useApp";
 import { Badge, Modal } from "../shared/Ui";
-export default function AboutPage({ version }: { version: string }) {
+export default function AboutPage({
+  version,
+  embedded = false,
+}: {
+  version: string;
+  embedded?: boolean;
+}) {
   const [filter, setFilter] = useState("");
   const [allLicenses, setAllLicenses] = useState(false);
   const [license, setLicense] = useState<{
@@ -36,9 +42,11 @@ export default function AboutPage({ version }: { version: string }) {
   );
   return (
     <div className="about-page">
-      <div className="page-heading">
-        <h1>关于</h1>
-      </div>
+      {!embedded && (
+        <div className="page-heading">
+          <h1>关于</h1>
+        </div>
+      )}
       <section className="settings-card about-application">
         <div className="about-app">
           <img src="/logo.svg" alt="APMM" />
@@ -49,10 +57,7 @@ export default function AboutPage({ version }: { version: string }) {
           <Badge>v{version}</Badge>
         </div>
         <div className="about-links">
-          {link(
-            "项目主页",
-            "https://github.com/a190141074/APMM-next",
-          )}
+          {link("项目主页", "https://github.com/a190141074/APMM-next")}
           <button
             className="button"
             onClick={() => setLicense({ title: "许可说明", text: licenseText })}
@@ -76,7 +81,7 @@ export default function AboutPage({ version }: { version: string }) {
           <div className="credit-row">
             <div>
               <strong>NapCatQQ-Desktop</strong>
-              <small>布局与交互参考 · GPL-3.0</small>
+              <small>页面交互及 APX 状态卡布局参考 · GPL-3.0</small>
             </div>
             {link("主页", "https://github.com/NapNeko/NapCatQQ-Desktop")}
             {link(
@@ -86,10 +91,48 @@ export default function AboutPage({ version }: { version: string }) {
           </div>
           <div className="credit-row">
             <div>
+              <strong>旧版 Astral Party Mod Manager</strong>
+              <small>角色紧凑卡、原图定位及模组输出行为参考</small>
+            </div>
+            {link(
+              "发布与资源",
+              "https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets",
+            )}
+          </div>
+          <div className="credit-row">
+            <div>
               <strong>JASM</strong>
               <small>模组管理体验参考</small>
             </div>
             {link("主页", "https://github.com/Jorixon/JASM")}
+          </div>
+          <div className="credit-row">
+            <div>
+              <strong>AstralParty.Toys</strong>
+              <small>逐文件元数据缓存与启动扫描优化参考 · AGPL-3.0</small>
+            </div>
+            {link(
+              "主页",
+              "https://github.com/higashitaniyume/AstralParty.Toys",
+            )}
+            {link(
+              "许可",
+              "https://github.com/higashitaniyume/AstralParty.Toys/blob/master/LICENSE",
+            )}
+          </div>
+          <div className="credit-row">
+            <div>
+              <strong>WorkshopUploaderMod</strong>
+              <small>工坊投稿资料、预览图与提交流程参考 · AGPL-3.0</small>
+            </div>
+            {link(
+              "主页",
+              "https://github.com/BAKAOLC/STS2-WorkshopUploaderMod",
+            )}
+            {link(
+              "许可",
+              "https://github.com/BAKAOLC/STS2-WorkshopUploaderMod/blob/main/LICENSE",
+            )}
           </div>
         </section>
         <section className="settings-card">

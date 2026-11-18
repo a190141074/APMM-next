@@ -1,3 +1,4 @@
+import { portableBuildReport, distributionsReport } from "./work-paths.mjs";
 // 使用真实旧版助手和旧程序文件，在独立目录验证首次桥接与助手交接；不调用旧安装。
 import { spawn, spawnSync } from "node:child_process";
 import {
@@ -16,10 +17,10 @@ const root = path.resolve(import.meta.dirname, "..");
 const old = process.env.APMM_LEGACY_FIXTURE;
 if (!old) throw Error("请指定只读的 APMM_LEGACY_FIXTURE 旧版备份目录");
 const distribution = JSON.parse(
-  readFileSync(path.join(root, "verification-distributions.json"), "utf8"),
+  readFileSync(distributionsReport, "utf8"),
 );
 const build = JSON.parse(
-  readFileSync(path.join(root, "verification-portable-build.json"), "utf8"),
+  readFileSync(portableBuildReport, "utf8"),
 );
 const work = process.env.APMM_WORK_DIR || "B:/APMM-next-work";
 const output = path.join(work, "legacy-bridge-validation", randomUUID());

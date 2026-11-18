@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 // 在新的便携副本中复制真实旧库；不调用任何应用 Mod 的命令。
 import { spawn } from "node:child_process";
 import { chromium } from "playwright";
@@ -6,7 +7,7 @@ import { randomUUID, createHash } from "node:crypto";
 import path from "node:path";
 import assert from "node:assert/strict";
 const root = path.resolve(import.meta.dirname, "..");
-const build = JSON.parse(readFileSync(path.join(root, "verification-portable-build.json"), "utf8"));
+const build = JSON.parse(readFileSync(portableBuildReport, "utf8"));
 const source = process.env.APMM_OLD_DATA || "D:/MOD/APMM/astral-tauri/dist/AstralPartyModManager/data";
 const output = path.join(process.env.APMM_WORK_DIR || "B:/APMM-next-work", "migration-validation", randomUUID());
 const appDir = path.join(output, "app");

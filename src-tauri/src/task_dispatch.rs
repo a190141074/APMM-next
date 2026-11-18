@@ -19,6 +19,7 @@ pub fn task_execute(
             | "apx-cache"
             | "apx-export"
             | "workshop-install"
+            | "author-upload"
             | "workshop-uninstall"
             | "package-export"
             | "quick-export"
@@ -30,6 +31,13 @@ pub fn task_execute(
     ) {
         return Err("未知任务类型".into());
     }
+    let args = if kind == "author-upload" {
+        let id = args["id"].as_str().ok_or("缺少投稿快照编号")?;
+        uuid::Uuid::parse_str(id).map_err(|_| "投稿快照编号无效")?;
+        json!({"id":id})
+    } else {
+        args
+    };
     let manager = app.state::<crate::tasks::TaskManager>();
     let (id, cancel) = manager.begin(&title, &kind, args.clone());
     let returned = id.clone();
@@ -49,12 +57,13 @@ pub fn task_execute(
         let platform = args["platform"].as_str().map(String::from);
         let result: Result<Value, String> = async {
             match kind.as_str() {
+                "author-upload" => crate::author::upload(value("id"), app.clone()).await,
                 "scan" => {
                     let handle = app.clone();
                     tauri::async_runtime::spawn_blocking(move || {
-                        let state = handle.state::<AppState>();
-                        let _guard = state.mutation.lock().map_err(|_| "库写入锁不可用")?;
-                        reconcile_inner(Some(&handle)).map(|v| json!(v))
+                        let result = crate::directory_scan::full_scan(&handle);
+                        crate::directory_monitor::finished(&handle, result.as_ref().err().cloned());
+                        result.map(|v| json!(v))
                     })
                     .await
                     .map_err(|e| e.to_string())?
@@ -109,9 +118,14 @@ pub fn task_execute(
                 )
                 .await
                 .map(|v| json!(v)),
-                "workshop-install" => workshop_install(value("id"), app.clone(), app.state())
-                    .await
-                    .map(|v| json!(v)),
+                "workshop-install" => workshop_install(
+                    serde_json::from_value::<crate::workshop::InstallRequest>(args.clone())
+                        .map_err(|_| "安装请求无效，请重新预检")?,
+                    app.clone(),
+                    app.state(),
+                )
+                .await
+                .map(|v| json!(v)),
                 "workshop-uninstall" => workshop_uninstall(value("id"), app.state())
                     .await
                     .map(|v| json!(v)),

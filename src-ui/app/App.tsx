@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -23,8 +23,6 @@ import {
   Moon,
   Download,
   Upload,
-  Sparkles,
-  ArrowRight,
   Info,
   FlaskConical,
 } from "lucide-react";
@@ -33,16 +31,20 @@ import {
   useTasks,
   useActions,
   useNativeWindow,
-  useDrop,
 } from "../hooks/useApp";
 import { labels, type Route, type SearchMode } from "../core/domain/resources";
 import { Loading, Badge } from "../shared/Ui";
 import { ResourceSearch } from "../modules/ResourceSearch";
+import { DirectorySyncIndicator } from "../modules/DirectorySyncIndicator";
+import { version as appVersion } from "../../package.json";
+import { OverviewPage } from "../modules/OverviewPage";
 import { ApxPage } from "../modules/ApxPage";
 import { ResourcePage } from "../modules/ResourcePage";
 import { PresetsPage } from "../modules/PresetsPage";
 import { SettingsPage } from "../modules/SettingsPage";
 import { PluginsPage } from "../modules/PluginsPage";
+import { WorkshopPage } from "../modules/WorkshopPage";
+import { AuthorPage } from "../modules/AuthorPage";
 import { PackageDialog } from "../modules/PackageDialog";
 import { TaskPopover } from "../modules/TaskPopover";
 import { useStartup } from "../hooks/useStartup";
@@ -51,7 +53,9 @@ import { WelcomeDialog } from "../modules/WelcomeDialog";
 import { useAppearance } from "../hooks/useAppearance";
 import { DebugPage } from "../modules/DebugPage";
 import { usePageNavigation } from "../hooks/usePageNavigation";
-const AboutPage = lazy(() => import("../modules/AboutPage"));
+import { usePageReveal } from "../hooks/usePageReveal";
+import { useResourceDrop } from "../hooks/useResourceDrop";
+import { DropImportDialog } from "../modules/DropImportDialog";
 const groups = [
   {
     title: "工作区",
@@ -78,15 +82,13 @@ const groups = [
     items: [
       ["apx", Blocks],
       ["workshop", Store],
+      ["author", Upload],
       ["auxiliary", Puzzle],
     ],
   },
   {
-    title: "关于",
-    items: [
-      ["settings", Settings],
-      ["about", Info],
-    ],
+    title: "应用",
+    items: [["settings", Settings]],
   },
 ] as const;
 export function App() {
@@ -97,7 +99,12 @@ export function App() {
   const { route, target, setRoute, pageRef } = usePageNavigation(
     groups.flatMap((g) => g.items.map(([key]) => key)),
   );
+  usePageReveal(pageRef, route);
   const [collapsed, setCollapsed] = useState(false);
+  const authorMode = workspace.data?.settings.authorMode || false;
+  useEffect(() => {
+    if (!authorMode && target === "author") setRoute("workshop");
+  }, [authorMode, target]);
   const [tasksOpen, setTasksOpen] = useState(false);
   const [searches, setSearches] = useState<Partial<Record<Route, string>>>({});
   const search = searches[route] || "";
@@ -125,12 +132,23 @@ export function App() {
   const [welcomed, setWelcomed] = useState(
     localStorage.getItem("apmm.welcomed") === "true",
   );
-  const acceptDrop = useCallback((paths: string[]) => {
-    setImportKind("all");
+  const [unknownDrop, setUnknownDrop] = useState<{
+    paths: string[];
+    packages: string[];
+  } | null>(null);
+  const openDroppedPackages = (paths: string[]) => {
+    setImportKind("packages");
     setDrop(paths);
     setPkg("import");
-  }, []);
-  useDrop(acceptDrop);
+  };
+  const { feedback: dropFeedback, importing: dropBusy } = useResourceDrop({
+    resources: workspace.data?.resources || [],
+    route,
+    blocked: !!pkg || !!unknownDrop,
+    onUnknown: (paths, packages) => setUnknownDrop({ paths, packages }),
+    onPackages: openDroppedPackages,
+    notice: setNotice,
+  });
   useEffect(() => {
     if (!notice) return;
     const t = setTimeout(() => setNotice(""), 6500);
@@ -142,7 +160,14 @@ export function App() {
     setRoute(next);
   };
   return (
-    <div className={`app ${collapsed ? "collapsed" : ""}`}>
+    <div
+      className={`app ${collapsed ? "collapsed" : ""} ${dropFeedback ? "resource-drop-active" : ""}`}
+    >
+      {dropFeedback && (
+        <div className="resource-drop-hint" role="status">
+          {dropFeedback.message}
+        </div>
+      )}
       <aside className="sidebar">
         <div
           className="brand"
@@ -164,18 +189,20 @@ export function App() {
           {groups.map((g) => (
             <section key={g.title}>
               <div className="nav-label">{collapsed ? "·" : g.title}</div>
-              {g.items.map(([key, Icon]) => (
-                <button
-                  key={key}
-                  title={labels[key]}
-                  className={`nav-item ${target === key ? "active" : ""}`}
-                  aria-current={target === key ? "page" : undefined}
-                  onClick={() => navigate(key)}
-                >
-                  <Icon size={18} />
-                  {!collapsed && <span>{labels[key]}</span>}
-                </button>
-              ))}
+              {g.items
+                .filter(([key]) => key !== "author" || authorMode)
+                .map(([key, Icon]) => (
+                  <button
+                    key={key}
+                    title={labels[key]}
+                    className={`nav-item ${target === key ? "active" : ""}`}
+                    aria-current={target === key ? "page" : undefined}
+                    onClick={() => navigate(key)}
+                  >
+                    <Icon size={18} />
+                    {!collapsed && <span>{labels[key]}</span>}
+                  </button>
+                ))}
             </section>
           ))}
         </nav>
@@ -191,7 +218,9 @@ export function App() {
               <PanelLeftClose size={18} />
             )}
           </button>
-          {!collapsed && <small>v{workspace.data?.version || "0.4.1"}</small>}
+          {!collapsed && (
+            <small>v{workspace.data?.version || appVersion}</small>
+          )}
         </div>
       </aside>
       <div className="workspace">
@@ -259,6 +288,7 @@ export function App() {
           <div className="breadcrumb">
             工作区 <span>/</span> <strong>{labels[route]}</strong>
           </div>
+          <DirectorySyncIndicator />
           <ResourceSearch
             value={search}
             onChange={setSearch}
@@ -280,6 +310,7 @@ export function App() {
             </summary>
             <div>
               <button
+                disabled={dropBusy}
                 onClick={(e) => {
                   setImportKind("images");
                   setPkg("import");
@@ -290,6 +321,7 @@ export function App() {
                 <small>添加图片到对应部位</small>
               </button>
               <button
+                disabled={dropBusy}
                 onClick={(e) => {
                   setImportKind("packages");
                   setPkg("import");
@@ -300,6 +332,7 @@ export function App() {
                 <small>.apmod · 支持历史包和分卷</small>
               </button>
               <button
+                disabled={dropBusy}
                 onClick={(e) => {
                   setPkg("export");
                   e.currentTarget.closest("details")?.removeAttribute("open");
@@ -311,7 +344,7 @@ export function App() {
             </div>
           </details>
         </header>
-        <main className="main-content" ref={pageRef}>
+        <main className="main-content" ref={pageRef} data-route={route}>
           {workspace.isPending ? (
             <Loading />
           ) : workspace.error ? (
@@ -329,94 +362,12 @@ export function App() {
             workspace.data && (
               <>
                 {route === "overview" ? (
-                  <>
-                    <div className="page-heading">
-                      <div>
-                        <div className="eyebrow">YOUR CREATIVE SPACE</div>
-                        <h1>让每一份灵感，各就其位。</h1>
-                        <p>浏览原图、管理替换，定制你的 Astral Party。</p>
-                      </div>
-                      <Badge tone="success">
-                        {api.native ? "桌面工作区" : "交互预览"}
-                      </Badge>
-                    </div>
-                    <div className="overview-hero">
-                      <div>
-                        <span className="eyebrow">ASTRAL PARTY</span>
-                        <h2>先安装 APX，再应用 Mod。</h2>
-                        <p>
-                          Mod 需要 APX
-                          支持。请选择游戏渠道，确认适配版本后安装。
-                        </p>
-                        <button
-                          className="button primary"
-                          onClick={() => navigate("apx")}
-                        >
-                          安装 APX 插件 <ArrowRight size={17} />
-                        </button>
-                      </div>
-                      <div className="hero-orbit">
-                        <Sparkles size={90} />
-                        <span>✦</span>
-                        <b>AP</b>
-                      </div>
-                    </div>
-                    <div className="stats-grid">
-                      {[
-                        ["资源槽位", workspace.data.resources.length],
-                        [
-                          "已收藏 Mod",
-                          workspace.data.resources.reduce(
-                            (n, r) => n + r.files.length,
-                            0,
-                          ),
-                        ],
-                        [
-                          "正在应用",
-                          workspace.data.resources.filter((r) => r.activeHash)
-                            .length,
-                        ],
-                        ["进行中任务", running],
-                      ].map(([label, value]) => (
-                        <div className="stat" key={label}>
-                          <small>{label}</small>
-                          <strong>{value}</strong>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="section-heading">
-                      <h2>从这里开始</h2>
-                      <span>先准备插件，再管理 Mod</span>
-                    </div>
-                    <div className="quick-grid">
-                      {[
-                        ["apx", "1. 安装 APX", "Mod 所需的客户端补丁", Blocks],
-                        [
-                          "heroes",
-                          "2. 管理 Mod",
-                          "浏览、导入并应用 Mod",
-                          Users,
-                        ],
-                        [
-                          "auxiliary",
-                          "3. 提取原图",
-                          "按需安装资产工具，保留完整画质",
-                          Puzzle,
-                        ],
-                      ].map(([key, title, description, Icon]: any) => (
-                        <button
-                          className="quick-card"
-                          key={key}
-                          onClick={() => navigate(key)}
-                        >
-                          <Icon size={24} />
-                          <h3>{title}</h3>
-                          <p>{description}</p>
-                          <ArrowRight size={17} />
-                        </button>
-                      ))}
-                    </div>
-                  </>
+                  <OverviewPage
+                    snapshot={workspace.data}
+                    running={running}
+                    native={api.native}
+                    navigate={navigate}
+                  />
                 ) : route === "presets" ? (
                   <PresetsPage snapshot={workspace.data} />
                 ) : route === "settings" ? (
@@ -426,19 +377,26 @@ export function App() {
                   />
                 ) : route === "debug" ? (
                   <DebugPage />
-                ) : route === "about" ? (
-                  <Suspense fallback={<Loading />}>
-                    <AboutPage version={workspace.data.version} />
-                  </Suspense>
                 ) : route === "apx" ? (
                   <ApxPage />
-                ) : ["workshop", "auxiliary"].includes(route) ? (
+                ) : route === "workshop" ? (
+                  <WorkshopPage
+                    onImport={() => {
+                      if (dropBusy) return;
+                      setImportKind("packages");
+                      setPkg("import");
+                    }}
+                  />
+                ) : route === "author" ? (
+                  <AuthorPage />
+                ) : route === "auxiliary" ? (
                   <PluginsPage route={route} />
                 ) : (
                   <ResourcePage
                     key={route}
                     route={route}
                     search={search}
+                    onSearchClear={() => setSearch("")}
                     searchMode={searchMode}
                     focusKey={focusKey}
                     onFocusClear={() => setFocusKey(undefined)}
@@ -461,6 +419,17 @@ export function App() {
           </button>
         </footer>
       </div>
+      {unknownDrop && (
+        <DropImportDialog
+          paths={unknownDrop.paths}
+          hasPackages={unknownDrop.packages.length > 0}
+          onClose={() => {
+            const packages = unknownDrop.packages;
+            setUnknownDrop(null);
+            if (packages.length) openDroppedPackages(packages);
+          }}
+        />
+      )}
       {pkg && (
         <PackageDialog
           mode={pkg}

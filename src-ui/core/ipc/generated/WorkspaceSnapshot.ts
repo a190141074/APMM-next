@@ -2,4 +2,4 @@
 import type { ResourceRecord } from "./ResourceRecord";
 import type { WorkspaceSettings } from "./WorkspaceSettings";
 
-export type WorkspaceSnapshot = { version: string, dataDir: string, gameDir: string | null, resources: Array<ResourceRecord>, settings: WorkspaceSettings, migrated: boolean, };
+export type WorkspaceSnapshot = { revision: number, version: string, dataDir: string, gameDir: string | null, resources: Array<ResourceRecord>, settings: WorkspaceSettings, migrated: boolean, };

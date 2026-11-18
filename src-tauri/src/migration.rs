@@ -240,6 +240,100 @@ fn copy_to(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[ignore = "需要工作盘下全新的 ASTRAL_DEV_DATA_DIR，使用 --include-ignored 验收"]
+    fn migrated_library_applies_and_replaces_same_slot_with_rollback() {
+        use crate::{dto::ResourceAction, management_tests::png};
+
+        let destination = PathBuf::from(std::env::var("ASTRAL_DEV_DATA_DIR").unwrap());
+        assert_eq!(data_dir(), destination);
+        let root = destination.parent().unwrap().canonicalize().unwrap();
+        let work = crate::staging::work_root().canonicalize().unwrap();
+        assert!(root.starts_with(&work) && root != work);
+        let source = root.join("old-data");
+        let game = root.join("test-game/modimg");
+        assert!(!destination.exists() && !source.exists() && !game.exists());
+
+        const SLOT: &str = "UT_Hero_Bust_101_01_0";
+        let old_vault = source.join("vault");
+        let first_fixture = root.join("first.png");
+        png(&first_fixture, 10);
+        let first_hash = sha256_file(&first_fixture).unwrap();
+        let second_rel = "heroes/101/busts/second.png";
+        ensure_dir(&old_vault.join(second_rel).parent().unwrap()).unwrap();
+        fs::rename(first_fixture, old_vault.join(format!("{first_hash}.png"))).unwrap();
+        png(&old_vault.join(second_rel), 20);
+        let second_hash = sha256_file(&old_vault.join(second_rel)).unwrap();
+
+        // 按旧版字段写入历史扁平 Vault 和树状 Vault 的两个同槽位候选。
+        let legacy = json!({
+            "version": 1,
+            "settings": { "modimgPath": game },
+            "heroes": { "101": { "sections": { "busts": { "resources": { (SLOT): {
+                "activeHash": first_hash,
+                "files": [
+                    { "hash": first_hash, "sourceName": "first.png", "ext": ".png" },
+                    { "hash": second_hash, "sourceName": "second.png", "ext": ".png", "relPath": second_rel }
+                ]
+            } } } } } }
+        });
+        let old_library = source.join("library.json");
+        fs::write(&old_library, serde_json::to_vec(&legacy).unwrap()).unwrap();
+        let old_hash = sha256_file(&old_library).unwrap();
+        ensure_dir(&game).unwrap();
+        let other_file = game.join("UT_Hero_Bust_101_01_1.png");
+        let output = game.join(format!("{SLOT}.png"));
+        png(&other_file, 30);
+        let other_hash = sha256_file(&other_file).unwrap();
+        let report = copy_to(&source, &destination, &AtomicBool::new(false), |_, _, _| {}).unwrap();
+        assert_eq!(report["gameModsApplied"], false);
+        assert_eq!(PathBuf::from(load_library().settings.modimg_path), game);
+        assert_eq!(sha256_file(&old_library).unwrap(), old_hash);
+        assert_eq!(sha256_file(&other_file).unwrap(), other_hash);
+        assert!(!output.exists());
+
+        let mutation = Mutex::new(());
+        let apply = |hash: &str| {
+            crate::workspace::apply_items(
+                vec![ResourceAction {
+                    entity_id: "101".into(),
+                    section: "busts".into(),
+                    canonical: SLOT.into(),
+                    hash: Some(hash.into()),
+                }],
+                &mutation,
+            )
+        };
+        let read_slot = || load_library().heroes["101"].sections["busts"].resources[SLOT].clone();
+        assert_eq!(
+            read_slot().active_hash.as_deref(),
+            Some(first_hash.as_str())
+        );
+        apply(&first_hash).unwrap();
+        assert_eq!(sha256_file(&output).unwrap(), first_hash);
+        apply(&second_hash).unwrap();
+        assert_eq!(sha256_file(&output).unwrap(), second_hash);
+        assert_eq!(
+            read_slot().active_hash.as_deref(),
+            Some(second_hash.as_str())
+        );
+        assert_eq!(read_slot().files.len(), 2);
+
+        // 用目录占住库文件的暂存路径，验证发布索引失败会恢复游戏文件。
+        fs::create_dir(destination.join("library.json.part")).unwrap();
+        assert!(apply(&first_hash)
+            .unwrap_err()
+            .contains("写入库暂存文件失败"));
+        assert_eq!(sha256_file(&output).unwrap(), second_hash);
+        assert_eq!(
+            read_slot().active_hash.as_deref(),
+            Some(second_hash.as_str())
+        );
+        assert_eq!(sha256_file(&other_file).unwrap(), other_hash);
+        assert_eq!(sha256_file(&old_library).unwrap(), old_hash);
+    }
+
     #[test]
     fn copies_without_changing_source_and_rewrites_path_boundaries() {
         let root = crate::staging::create("migration-test").unwrap();

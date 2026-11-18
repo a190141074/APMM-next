@@ -41,6 +41,9 @@ pub struct ResourceRecord {
     pub full_name: String,
     pub application_slot: String,
     pub original_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub outimg_path: Option<String>,
     #[serde(default)]
     pub original_status: String,
     pub files: Vec<ModFile>,
@@ -51,12 +54,26 @@ pub struct ResourceRecord {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../../src-ui/core/ipc/generated/")]
 pub struct WorkspaceSnapshot {
+    #[serde(default)]
+    pub revision: u32,
     pub version: String,
     pub data_dir: String,
     pub game_dir: Option<String>,
     pub resources: Vec<ResourceRecord>,
     pub settings: WorkspaceSettings,
     pub migrated: bool,
+}
+
+/// 增量仅更新展示资源；版本断档或工作区配置变化时重新读取完整快照。
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "../../src-ui/core/ipc/generated/")]
+pub struct WorkspaceDelta {
+    pub base_revision: u32,
+    pub revision: u32,
+    pub resources: Vec<ResourceRecord>,
+    pub removed_keys: Vec<String>,
+    pub full_refresh: bool,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -69,6 +86,7 @@ pub struct PresetSummary {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../../src-ui/core/ipc/generated/")]
 pub struct WorkspaceSettings {
+    pub author_mode: bool,
     #[ts(optional)]
     pub appearance: Option<crate::appearance::AppearanceSettings>,
     pub outimg_path: String,
@@ -85,6 +103,7 @@ pub struct WorkspaceSettings {
 impl From<&crate::storage::Settings> for WorkspaceSettings {
     fn from(s: &crate::storage::Settings) -> Self {
         Self {
+            author_mode: s.author_mode,
             appearance: s.appearance.clone().filter(|value| value.validate().is_ok()),
             outimg_path: s.outimg_path.clone(),
             monitor_directories: Some(s.monitor_directories),

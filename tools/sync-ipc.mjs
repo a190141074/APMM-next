@@ -18,7 +18,7 @@ writeFileSync(
   target,
   "// 由 tools/sync-ipc.mjs 从 Rust 命令注册面生成。\nexport const IPC = " +
     JSON.stringify(Object.fromEntries(names.map((n) => [n, n])), null, 2) +
-    ' as const;\nexport const EVENTS = { taskProgress: "task-progress", workspaceChanged: "workspace-changed" } as const;\n',
+    ' as const;\nexport const EVENTS = { taskProgress: "task-progress", workspaceChanged: "workspace-changed", workspaceUpdated: "workspace-updated" } as const;\n',
 );
 if (process.argv.includes("--migrate")) {
   const walk = (dir) =>

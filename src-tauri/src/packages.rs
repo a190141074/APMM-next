@@ -527,6 +527,16 @@ fn unpack_package_v3(
     password: &str,
     stage: &Path,
 ) -> Result<(PackageManifest, Vec<PathBuf>), String> {
+    unpack_package_v3_bounded(path, password, stage, u64::MAX, PACKAGE_MAX_FILES)
+}
+
+fn unpack_package_v3_bounded(
+    path: &str,
+    password: &str,
+    stage: &Path,
+    limit: u64,
+    file_limit: usize,
+) -> Result<(PackageManifest, Vec<PathBuf>), String> {
     ensure_dir(stage).map_err(|e| e.to_string())?;
     let zip_path = stage.join("payload.zip");
     let result: Result<(PackageManifest, Vec<PathBuf>), String> = (|| {
@@ -584,6 +594,7 @@ fn unpack_package_v3(
         let cipher = Aes256Gcm::new_from_slice(&key).map_err(|e| e.to_string())?;
         let mut zip_out = fs::File::create(&zip_path).map_err(|e| e.to_string())?;
         let mut sequence = 0u64;
+        let mut staged_bytes = 0u64;
         for mut volume in volumes.into_iter().flatten() {
             loop {
                 let mut len_bytes = [0u8; 4];
@@ -620,6 +631,12 @@ fn unpack_package_v3(
                         },
                     )
                     .map_err(|_| "密码错误或分卷已损坏".to_string())?;
+                staged_bytes = staged_bytes
+                    .checked_add(plain.len() as u64)
+                    .ok_or("分卷大小溢出")?;
+                if staged_bytes > limit.saturating_add(1024 * 1024) {
+                    return Err("分卷暂存超过投稿上限".into());
+                }
                 zip_out.write_all(&plain).map_err(|e| e.to_string())?;
                 sequence += 1;
             }
@@ -630,7 +647,7 @@ fn unpack_package_v3(
         drop(zip_out);
         let mut zip = zip::ZipArchive::new(fs::File::open(&zip_path).map_err(|e| e.to_string())?)
             .map_err(|e| format!("加密包内容无效：{}", e))?;
-        if zip.len() > PACKAGE_MAX_FILES + 1 {
+        if zip.len() > file_limit + 1 {
             return Err("加密包文件数超过上限".into());
         }
         let mut manifest_text = String::new();
@@ -644,10 +661,11 @@ fn unpack_package_v3(
         }
         let manifest: PackageManifest =
             serde_json::from_str(&manifest_text).map_err(|e| e.to_string())?;
-        if manifest.format_version != 3 || manifest.files.len() > PACKAGE_MAX_FILES {
+        if manifest.format_version != 3 || manifest.files.len() > file_limit {
             return Err("不支持的分卷包版本或文件数".into());
         }
         let mut paths = Vec::with_capacity(manifest.files.len());
+        let mut expanded = 0u64;
         for (index, meta) in manifest.files.iter().enumerate() {
             if !is_png_mod_ext(&meta.ext)
                 || meta.hash.len() != 64
@@ -655,12 +673,23 @@ fn unpack_package_v3(
             {
                 return Err("分卷清单中的资源无效".into());
             }
-            let mut entry = zip
+            let entry = zip
                 .by_name(&format!("payload/{}", meta.hash))
                 .map_err(|_| format!("缺少文件 {}", meta.source_name))?;
+            if entry.size() > limit.saturating_sub(expanded) {
+                return Err("分卷展开超过投稿上限".into());
+            }
             let output = stage.join(format!("{:05}.payload", index));
             let mut file = fs::File::create(&output).map_err(|e| e.to_string())?;
-            std::io::copy(&mut entry, &mut file).map_err(|e| e.to_string())?;
+            let count = std::io::copy(
+                &mut entry.take(limit.saturating_sub(expanded).saturating_add(1)),
+                &mut file,
+            )
+            .map_err(|e| e.to_string())?;
+            expanded = expanded.checked_add(count).ok_or("分卷大小溢出")?;
+            if expanded > limit {
+                return Err("分卷展开超过投稿上限".into());
+            }
             if sha256_file(&output)?.to_ascii_lowercase() != meta.hash.to_ascii_lowercase() {
                 return Err("分卷资源哈希校验失败".into());
             }
@@ -934,24 +963,33 @@ pub(crate) fn package_contents(
     path: &str,
     password: &str,
 ) -> Result<(PackageManifest, Vec<Vec<u8>>), String> {
+    package_contents_bounded(path, password, PACKAGE_MAX_BYTES, PACKAGE_MAX_FILES)
+}
+
+fn package_contents_bounded(
+    path: &str,
+    password: &str,
+    limit: usize,
+    file_limit: usize,
+) -> Result<(PackageManifest, Vec<Vec<u8>>), String> {
     if fs::metadata(path)
         .map_err(|e| format!("读取加密包失败：{}", e))?
         .len()
-        > PACKAGE_MAX_BYTES as u64
+        > limit as u64
     {
         return Err("旧版单文件加密包超过 1 GiB 上限".into());
     }
     let encrypted = fs::read(path).map_err(|e| format!("读取加密包失败：{}", e))?;
-    if encrypted.len() > PACKAGE_MAX_BYTES {
+    if encrypted.len() > limit {
         return Err("旧版单文件加密包超过 1 GiB 上限".into());
     }
     let plain = decrypt_package(&encrypted, password)?;
-    if plain.len() > PACKAGE_MAX_BYTES {
+    if plain.len() > limit {
         return Err("旧版单文件解密内容超过 1 GiB 上限".into());
     }
     let mut zip =
         zip::ZipArchive::new(Cursor::new(plain)).map_err(|e| format!("加密包内容无效：{}", e))?;
-    if zip.len() > PACKAGE_MAX_FILES + 1 {
+    if zip.len() > file_limit + 1 {
         return Err("加密包文件数超过上限".into());
     }
     let mut manifest_text = String::new();
@@ -962,7 +1000,7 @@ pub(crate) fn package_contents(
         .map_err(|e| e.to_string())?;
     let manifest: PackageManifest =
         serde_json::from_str(&manifest_text).map_err(|e| format!("manifest 无效：{}", e))?;
-    if !matches!(manifest.format_version, 1 | 2) || manifest.files.len() > PACKAGE_MAX_FILES {
+    if !matches!(manifest.format_version, 1 | 2) || manifest.files.len() > file_limit {
         return Err("不支持的加密包版本或文件数".into());
     }
     let mut data = Vec::with_capacity(manifest.files.len());
@@ -979,16 +1017,48 @@ pub(crate) fn package_contents(
             .map_err(|_| format!("缺少文件 {}", file.source_name))?;
         let mut bytes = Vec::new();
         entry
-            .take(PACKAGE_MAX_BYTES as u64)
+            .take(limit.saturating_sub(total) as u64 + 1)
             .read_to_end(&mut bytes)
             .map_err(|e| e.to_string())?;
         total = total.checked_add(bytes.len()).ok_or("解压大小溢出")?;
-        if total > PACKAGE_MAX_BYTES || sha256_bytes(&bytes) != file.hash.to_ascii_lowercase() {
+        if total > limit || sha256_bytes(&bytes) != file.hash.to_ascii_lowercase() {
             return Err("文件校验失败或超出解压上限".into());
         }
         data.push(bytes);
     }
     Ok((manifest, data))
+}
+
+/// 作者解析复用原包协议和分卷校验，不使用导入队列，也不写资源库或游戏。
+pub(crate) fn author_package_files(
+    path: &str,
+    password: &str,
+) -> Result<Vec<(PackageFileMeta, Vec<u8>)>, String> {
+    let stage = crate::staging::create("author-package")?;
+    let result = (|| {
+        let (manifest, data) = if package_is_v3(path)? {
+            let (manifest, paths) =
+                unpack_package_v3_bounded(path, password, &stage, 256 * 1024 * 1024, 512)?;
+            if paths.len() > 512 {
+                return Err("投稿最多支持 512 个资源".into());
+            }
+            let mut total = 0;
+            let mut data = Vec::new();
+            for path in paths {
+                total += fs::metadata(&path).map_err(|_| "分卷资源读取失败")?.len();
+                if total > 256 * 1024 * 1024 {
+                    return Err("投稿资源超过展开上限".into());
+                }
+                data.push(fs::read(path).map_err(|_| "分卷资源读取失败")?);
+            }
+            (manifest, data)
+        } else {
+            package_contents_bounded(path, password, 256 * 1024 * 1024, 512)?
+        };
+        Ok(manifest.files.into_iter().zip(data).collect())
+    })();
+    let _ = crate::staging::remove(&stage);
+    result
 }
 
 #[tauri::command(rename_all = "camelCase")]

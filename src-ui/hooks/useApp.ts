@@ -5,11 +5,31 @@ import { appService } from "../core/services/app";
 import type { TaskSnapshot } from "../core/ipc/generated/TaskSnapshot";
 import { errorText } from "../core/domain/resources";
 import { mergeTasks, activeTask } from "../core/domain/tasks";
+import {
+  mergeWorkspaceDelta,
+  acceptWorkspaceSnapshot,
+} from "../core/domain/workspace";
+import type { WorkspaceSnapshot } from "../core/ipc/generated/WorkspaceSnapshot";
+import type { DirectorySyncStatus } from "../core/ipc/generated/DirectorySyncStatus";
+import type { DropEvent } from "../core/domain/dropImport";
 export function useWorkspace() {
   return useQuery({
     queryKey: ["workspace"],
     queryFn: appService.snapshot,
     staleTime: 15000,
+    structuralSharing: (old, next) =>
+      acceptWorkspaceSnapshot(
+        old as WorkspaceSnapshot | undefined,
+        next as WorkspaceSnapshot,
+      ),
+  });
+}
+export function useDirectorySync() {
+  return useQuery<DirectorySyncStatus>({
+    queryKey: ["directory-sync"],
+    queryFn: () => appService.command(IPC.directory_sync_status),
+    enabled: appService.native,
+    staleTime: Infinity,
   });
 }
 export function useTasks() {
@@ -25,14 +45,35 @@ export function useTasks() {
     let disposed = false;
     let off: (() => void) | undefined;
     let offWorkspace: (() => void) | undefined;
+    let offDelta: (() => void) | undefined;
     void appService
-      .listenWorkspace(() => {
-        void client.invalidateQueries({ queryKey: ["workspace"] });
-        void client.invalidateQueries({ queryKey: ["preset-detail"] });
+      .listenWorkspace((status) => {
+        client.setQueryData<DirectorySyncStatus>(["directory-sync"], (old) =>
+          old && old.revision > status.revision ? old : status,
+        );
       })
       .then((f) => {
         if (disposed) f();
         else offWorkspace = f;
+      });
+    void appService
+      .listenWorkspaceDelta((delta) => {
+        const current = client.getQueryData<WorkspaceSnapshot>(["workspace"]);
+        const result = mergeWorkspaceDelta(current, delta);
+        if (result.refresh)
+          void client.invalidateQueries({ queryKey: ["workspace"] });
+        else if (result.snapshot !== current)
+          client.setQueryData(["workspace"], result.snapshot);
+        if (delta.revision > (current?.revision ?? 0))
+          void client.invalidateQueries({ queryKey: ["preset-detail"] });
+      })
+      .then((f) => {
+        if (disposed) f();
+        else {
+          offDelta = f;
+          // 订阅建立与首次查询之间可能有事件，补取一次确保基线完整。
+          void client.invalidateQueries({ queryKey: ["workspace"] });
+        }
       });
     void appService
       .listenTasks((t) => {
@@ -60,6 +101,7 @@ export function useTasks() {
       disposed = true;
       off?.();
       offWorkspace?.();
+      offDelta?.();
     };
   }, [client]);
   return q;
@@ -92,7 +134,7 @@ export function useActions() {
   );
   return { act, busy, notice, setNotice, api: appService };
 }
-export function useDrop(handler: (paths: string[]) => void) {
+export function useDrop(handler: (event: DropEvent) => void) {
   useEffect(() => {
     let disposed = false;
     let off: (() => void) | undefined;

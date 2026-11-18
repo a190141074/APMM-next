@@ -3,7 +3,7 @@ use crate::*;
 
 /* ============ 可下载预览缓存 ============ */
 
-pub(crate) const PREVIEW_MANIFEST_URL: &str = "https://github.com/a190141074/AstralPartyModManager-Previews/releases/latest/download/preview-manifest.json";
+pub(crate) const PREVIEW_MANIFEST_URL: &str = "https://github.com/a190141074/AstralPartyModManager-Previews/releases/latest/download/preview-manifest-v4.json";
 pub(crate) const PREVIEW_RELEASE_DOWNLOAD_PREFIX: &str =
     "https://github.com/a190141074/AstralPartyModManager-Previews/releases/download/";
 pub(crate) const PREVIEW_MAX_BYTES: u64 = 256 * 1024 * 1024;
@@ -77,6 +77,11 @@ pub(crate) fn cnb_preview_prefix() -> Option<String> {
 pub(crate) fn cnb_preview_bundle_url(official_url: &str) -> Option<String> {
     let cfg = cnb_preview_config();
     if cfg.enabled && !cfg.raw_prefix.is_empty() {
+        // CNB 清单携带版本目录时保留完整路径，不再只取文件名。
+        if official_url.starts_with(&cfg.raw_prefix) && is_allowed_preview_bundle_url(official_url)
+        {
+            return Some(official_url.to_string());
+        }
         let filename = official_url.rsplit('/').next().unwrap_or("").to_string();
         Some(format!("{}{}{}", cfg.raw_prefix, cfg.bundle_dir, filename))
     } else {
@@ -244,8 +249,31 @@ pub(crate) fn clear_preview_download_part(key: &str) {
     let _ = fs::remove_file(root.join(format!(".preview-download-{}.json", key)));
 }
 
-pub(crate) fn preview_bundle_keys() -> [&'static str; 3] {
-    ["heroes", "cards", "monsters"]
+fn preview_groups() -> &'static HashMap<String, Vec<String>> {
+    #[derive(Deserialize)]
+    struct Group {
+        key: String,
+        sections: Vec<String>,
+    }
+    static GROUPS: std::sync::OnceLock<HashMap<String, Vec<String>>> = std::sync::OnceLock::new();
+    GROUPS.get_or_init(|| {
+        serde_json::from_str::<Vec<Group>>(include_str!("../../config/preview-groups.json"))
+            .expect("内嵌预览分包配置必须有效")
+            .into_iter()
+            .map(|group| (group.key, group.sections))
+            .collect()
+    })
+}
+
+pub(crate) fn preview_bundle_keys() -> Vec<&'static str> {
+    let mut keys: Vec<_> = preview_groups().keys().map(String::as_str).collect();
+    keys.sort();
+    keys
+}
+
+/// 新分包按部位限制体积；旧角色整包仍保留兼容入口。
+pub(crate) fn valid_preview_bundle_key(key: &str) -> bool {
+    matches!(key, "all" | "heroes") || preview_groups().contains_key(key)
 }
 
 pub(crate) fn expected_preview_files() -> Vec<String> {
@@ -293,7 +321,13 @@ pub(crate) fn expected_preview_files_for_bundle(key: &str) -> Vec<String> {
     let mut files: Vec<String> = serde_json::from_str::<Vec<Entry>>(HERO_MANIFEST)
         .unwrap_or_default()
         .into_iter()
-        .filter(|entry| entry.preview.is_none() && category_of(&entry.section) == key)
+        .filter(|entry| {
+            entry.preview.is_none()
+                && preview_groups()
+                    .get(key)
+                    .map(|sections| sections.contains(&entry.section))
+                    .unwrap_or_else(|| category_of(&entry.section) == key)
+        })
         .map(|entry| {
             entry.preview_file.unwrap_or_else(|| {
                 format!(
@@ -401,7 +435,7 @@ pub(crate) fn validate_preview_manifest(
     }
     let mut keys = HashSet::new();
     for bundle in &manifest.bundles {
-        if !matches!(bundle.key.as_str(), "heroes" | "cards" | "monsters" | "all")
+        if !valid_preview_bundle_key(&bundle.key)
             || !keys.insert(bundle.key.clone())
             || bundle.version.is_empty()
             || bundle.sha256.len() != 64
@@ -493,6 +527,19 @@ pub(crate) fn manifest_version_rank(version: &str) -> u64 {
     version.parse::<u64>().unwrap_or(0)
 }
 
+/// 换源时不以旧清单覆盖新缓存；同版本缺图仍需补齐。
+pub(crate) fn preview_needs_update(local: Option<&PreviewBundleStatus>, remote: &str) -> bool {
+    let Some(local) = local else {
+        return true;
+    };
+    let Some(version) = local.local_version.as_deref() else {
+        return true;
+    };
+    let remote_rank = manifest_version_rank(remote);
+    let local_rank = manifest_version_rank(version);
+    remote_rank > local_rank || (remote_rank == local_rank && local.missing_files > 0)
+}
+
 pub(crate) fn fetch_preview_manifest(
     app: Option<&tauri::AppHandle>,
     cancel: Option<&AtomicBool>,
@@ -570,11 +617,15 @@ pub(crate) struct PreviewProbe {
 /// 对预览包的全部候选源并发测速（含 CNB 主源），按「吞吐 × 稳定性 − 延迟」
 /// 综合排序后返回。无论清单来自哪个源，这里都按 GitHub 资产名推导出一致的
 /// CNB / 镜像 / 官方四组源，保证择优逻辑与清单来源解耦。
-pub(crate) fn ranked_preview_bundle_sources(official_url: &str) -> Vec<PreviewProbe> {
+pub(crate) fn preview_bundle_sources(official_url: &str) -> Vec<Source> {
     let mut sources = Vec::new();
     // CNB 主源由 config 控制；已托管预览包时参与测速择优。
     if let Some(cnb_url) = cnb_preview_bundle_url(official_url) {
+        let direct = cnb_url == official_url;
         sources.push(Source::new(CNB_SOURCE_NAME, SourceKind::Cnb, cnb_url));
+        if direct {
+            return sources;
+        }
     }
     sources.push(Source::new(
         "加速源 ghproxy.net",
@@ -601,12 +652,18 @@ pub(crate) fn ranked_preview_bundle_sources(official_url: &str) -> Vec<PreviewPr
         SourceKind::Official,
         official_url.to_string(),
     ));
-    let scores = RemoteSourcePool::new("preview-bundle", sources).rank(
-        PREVIEW_PROBE_SAMPLES,
-        PREVIEW_PROBE_BYTES,
-        Duration::from_secs(PREVIEW_CONNECT_TIMEOUT_SECS),
-        Duration::from_secs(PREVIEW_PROBE_TIMEOUT_SECS),
-    );
+    sources
+}
+
+/// 对实际托管的来源测速；CNB 直链不构造不存在的 GitHub 镜像。
+pub(crate) fn ranked_preview_bundle_sources(official_url: &str) -> Vec<PreviewProbe> {
+    let scores = RemoteSourcePool::new("preview-bundle", preview_bundle_sources(official_url))
+        .rank(
+            PREVIEW_PROBE_SAMPLES,
+            PREVIEW_PROBE_BYTES,
+            Duration::from_secs(PREVIEW_CONNECT_TIMEOUT_SECS),
+            Duration::from_secs(PREVIEW_PROBE_TIMEOUT_SECS),
+        );
     scores
         .into_iter()
         .map(|s| PreviewProbe {

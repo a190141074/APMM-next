@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 import { createServer } from "node:net";
 // 发行 EXE 的管理功能验收；游戏、库、浏览器资料和失败夹具全部使用 B 盘独立副本。
 import { spawn } from "node:child_process";
@@ -31,7 +32,7 @@ const debugPort = await new Promise((resolve) => {
 });
 const root = path.resolve(import.meta.dirname, "..");
 const build = JSON.parse(
-  readFileSync(path.join(root, "verification-portable-build.json"), "utf8"),
+  readFileSync(portableBuildReport, "utf8"),
 );
 const output = path.join("B:/APMM-next-work/management-native", randomUUID());
 const appDir = path.join(output, "app"),

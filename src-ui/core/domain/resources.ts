@@ -11,8 +11,8 @@ export type Route =
   | "temporary"
   | "apx"
   | "workshop"
+  | "author"
   | "auxiliary"
-  | "about"
   | "debug"
   | "settings";
 export const labels: Record<Route, string> = {
@@ -27,8 +27,8 @@ export const labels: Record<Route, string> = {
   temporary: "临时",
   apx: "APX 插件",
   workshop: "创意工坊",
+  author: "投稿",
   auxiliary: "辅助插件",
-  about: "关于",
   debug: "调试",
   settings: "设置",
 };
@@ -201,6 +201,17 @@ export function variantGroups(rows: ResourceRecord[], byPart = false) {
 export function storageCategory(r: ResourceRecord) {
   return r.category === "monsters" ? "monsters" : "heroes";
 }
+export function isResourceApplied(r: ResourceRecord) {
+  return !!r.activeHash && !r.disabled;
+}
+export function matchesResourceFilter(r: ResourceRecord, filter: Filter) {
+  return (
+    filter === "all" ||
+    (filter === "applied" && isResourceApplied(r)) ||
+    (filter === "has-mod" && r.files.length > 0) ||
+    (filter === "no-mod" && r.files.length === 0)
+  );
+}
 export function filterResources(
   rows: ResourceRecord[],
   route: Route,
@@ -213,10 +224,7 @@ export function filterResources(
     (r) =>
       r.category === route &&
       (!section || r.section === section) &&
-      (filter === "all" ||
-        (filter === "applied" && !!r.activeHash) ||
-        (filter === "has-mod" && r.files.length > 0) ||
-        (filter === "no-mod" && r.files.length === 0)),
+      matchesResourceFilter(r, filter),
   );
   return rankSearch(filtered, search, mode).map((x) => x.row);
 }
@@ -227,6 +235,56 @@ export function groupResources(rows: ResourceRecord[], route: Route) {
     groups.set(key, [...(groups.get(key) || []), r]);
   }
   return [...groups.entries()].map(([key, resources]) => ({ key, resources }));
+}
+export type ResourceGroup = ReturnType<typeof groupResources>[number];
+export function resourceGroupSummary({ resources }: ResourceGroup) {
+  return {
+    cover:
+      resources.find(
+        (r) => r.section === "card" || r.section === "monster_card",
+      ) || resources[0],
+    mods: resources.reduce((total, r) => total + r.files.length, 0),
+    applied: resources.filter(isResourceApplied).length,
+  };
+}
+// 角色先按完整实体判断状态；搜索和部位只决定是否展示，不裁剪封面与统计。
+export function filterResourceGroups(
+  rows: ResourceRecord[],
+  route: Route,
+  search: string,
+  filter: Filter,
+  section: string,
+  mode: SearchMode = "smart",
+) {
+  const fullGroups = groupResources(
+    rows.filter((r) => r.category === route),
+    route,
+  );
+  const visibleRows = filterResources(
+    rows,
+    route,
+    search,
+    route === "heroes" ? "all" : filter,
+    section,
+    mode,
+  );
+  const order = new Map<string, number>();
+  for (const row of visibleRows) {
+    const key = resourceGroupKey(row, route);
+    if (!order.has(key)) order.set(key, order.size);
+  }
+  return fullGroups
+    .filter((group) => {
+      if (!order.has(group.key)) return false;
+      if (route !== "heroes" || filter === "all") return true;
+      const summary = resourceGroupSummary(group);
+      return filter === "applied"
+        ? summary.applied > 0
+        : filter === "has-mod"
+          ? summary.mods > 0
+          : summary.mods === 0;
+    })
+    .sort((a, b) => order.get(a.key)! - order.get(b.key)!);
 }
 export function bytes(n: number) {
   if (n < 1024) return `${n} B`;

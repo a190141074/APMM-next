@@ -10,14 +10,26 @@ pub(crate) fn synchronize(
     commit: impl Fn(&Library) -> Result<(), String>,
     checkpoint: impl Fn() -> Result<(), String>,
 ) -> Result<Vec<String>, String> {
+    let observation = crate::directory_observation::full(vault, Path::new(""), &checkpoint)?;
+    synchronize_observed(lib, vault, observation.root(vault)?, commit, checkpoint)
+}
+
+/// 失败文件仍保留在路径集合中，防止暂时无法读取时删除库记录。
+pub(crate) fn synchronize_observed(
+    lib: &mut Library,
+    vault: &Path,
+    observation: &crate::directory_observation::RootObservation,
+    commit: impl Fn(&Library) -> Result<(), String>,
+    checkpoint: impl Fn() -> Result<(), String>,
+) -> Result<Vec<String>, String> {
     let mut errors = Vec::new();
-    let paths = images_under(vault)?;
+    let paths = observation.files.keys().cloned().collect::<Vec<_>>();
     let mut hashes = BTreeMap::new();
     for p in &paths {
         checkpoint()?;
-        match sha256_file(p) {
-            Ok(h) => {
-                hashes.insert(p.clone(), h);
+        match &observation.files[p] {
+            Ok(value) => {
+                hashes.insert(p.clone(), value.hash.clone());
             }
             Err(e) => errors.push(format!("{}：{e}", p.display())),
         }
@@ -25,7 +37,12 @@ pub(crate) fn synchronize(
     let old = candidates(lib);
     let identities = paths
         .iter()
-        .filter_map(|p| file_identity(p).map(|id| (p.clone(), id)))
+        .filter_map(|p| {
+            observation.files[p]
+                .as_ref()
+                .ok()
+                .map(|v| (p.clone(), v.stamp.identity.clone()))
+        })
         .collect::<BTreeMap<_, _>>();
     let known_paths = old
         .iter()
@@ -33,14 +50,15 @@ pub(crate) fn synchronize(
         .collect::<HashSet<_>>();
     let missing = old
         .iter()
-        .filter(|(_, f, _)| !hashes.contains_key(&vault_path(vault, f)))
+        .filter(|(_, f, _)| !observation.files.contains_key(&vault_path(vault, f)))
         .map(|(_, f, _)| f.hash.clone())
         .collect::<Vec<_>>();
     let mut used = HashSet::new();
     for (slot, mut file, disabled) in old {
         checkpoint()?;
         let original_path = vault_path(vault, &file);
-        let mut path = hashes
+        let mut path = observation
+            .files
             .contains_key(&original_path)
             .then(|| original_path.clone());
         if path.is_none() {
@@ -80,8 +98,7 @@ pub(crate) fn synchronize(
             continue;
         };
         used.insert(path.clone());
-        if let Err(e) = image_import::validate_png(&path) {
-            errors.push(format!("{}：{e}", path.display()));
+        if observation.files[&path].is_err() {
             continue;
         }
         let hash = hashes[&path].clone();
@@ -134,8 +151,7 @@ pub(crate) fn synchronize(
     }
     for path in paths.into_iter().filter(|p| !used.contains(p)) {
         checkpoint()?;
-        if let Err(e) = image_import::validate_png(&path) {
-            errors.push(format!("{}：{e}", path.display()));
+        if observation.files[&path].is_err() {
             continue;
         }
         let Some(hash) = hashes.get(&path) else {

@@ -1,4 +1,4 @@
-//! 图片导入先预览名称、指纹与冲突，再入库；不会隐式应用游戏文件。
+//! 图片先独立暂存、校验再入库；拖入模式允许首个新候选自动应用。
 use crate::*;
 use serde_json::{json, Value};
 
@@ -54,13 +54,23 @@ pub(crate) fn import_selected(
     state: tauri::State<AppState>,
 ) -> Result<Vec<ImportResult>, String> {
     let _guard = state.mutation.lock().map_err(|_| "库写入锁已损坏")?;
-    let mut lib = load_library();
-    let vault = vault_dir();
+    import_into(input, load_library(), &vault_dir(), save_library)
+}
+
+/// 库和输出目录由调用方提供，隔离测试与正式导入共用完整提交链。
+pub(super) fn import_into(
+    input: Value,
+    mut lib: Library,
+    vault: &Path,
+    commit: impl Fn(&Library) -> Result<(), String>,
+) -> Result<Vec<ImportResult>, String> {
+    let drop_mode = input["dropMode"].as_bool().unwrap_or(false);
     let paths: Vec<String> =
         serde_json::from_value(input["paths"].clone()).map_err(|e| e.to_string())?;
     let stage = staging::create("image-import")?;
     let mut created = Vec::new();
     let mut out = Vec::new();
+    let mut first_indices = Vec::new();
     for (i, source) in paths.iter().enumerate() {
         let path = Path::new(source);
         let name = path
@@ -85,7 +95,12 @@ pub(crate) fn import_selected(
                 .get(source)
                 .filter(|v| v.is_object())
                 .or_else(|| input.get("target").filter(|v| v.is_object()));
-            let parsed = parsed_target(&name, &hash, target)?;
+            let (parsed, manual) = crate::image_drop::resolve(&name, &hash, target, drop_mode)?;
+            let stored_name = if drop_mode && manual && parsed.section_key != "temporary" {
+                format!("{}.png", parsed.canonical)
+            } else {
+                name.clone()
+            };
             let category = category_of(&parsed.section_key);
             let resource = get_resource(
                 &mut lib,
@@ -95,6 +110,10 @@ pub(crate) fn import_selected(
                 &parsed.canonical,
             );
             let duplicate = resource.files.iter().any(|f| f.hash == hash);
+            let first = drop_mode
+                && !duplicate
+                && resource.files.is_empty()
+                && parsed.section_key != "temporary";
             let rel = if duplicate {
                 resource
                     .files
@@ -105,11 +124,11 @@ pub(crate) fn import_selected(
                     .clone()
             } else {
                 let (dest, rel) = place_in_vault(
-                    &vault,
+                    vault,
                     &category,
                     &parsed.hero_id,
                     &parsed.section_key,
-                    &name,
+                    &stored_name,
                     &hash,
                     ".png",
                 )?;
@@ -123,11 +142,11 @@ pub(crate) fn import_selected(
                     fs_identity: crate::directory_files::file_identity(&dest).unwrap_or_default(),
                     hash: hash.clone(),
                     ext: ".png".into(),
-                    source_name: name.clone(),
+                    source_name: stored_name,
                     rel_path: rel.clone(),
                     added_at: unix_now(),
                     classification: crate::management_types::ClassificationRecord {
-                        manual: target.is_some(),
+                        manual,
                         original_name: name.clone(),
                         ..Default::default()
                     },
@@ -135,6 +154,9 @@ pub(crate) fn import_selected(
                 });
                 rel
             };
+            if first {
+                first_indices.push(out.len());
+            }
             Ok(ImportResult {
                 file: name.clone(),
                 ok: true,
@@ -151,7 +173,7 @@ pub(crate) fn import_selected(
         })();
         out.push(result.unwrap_or_else(|e| import_error(name, e)));
     }
-    let saved = save_library(&lib);
+    let saved = commit(&lib);
     if saved.is_err() {
         for path in created {
             let _ = fs::remove_file(path);
@@ -159,6 +181,9 @@ pub(crate) fn import_selected(
     }
     let _ = staging::remove(stage);
     saved?;
+    for index in first_indices {
+        crate::image_drop::apply_first(&mut lib, vault, &mut out[index], &commit);
+    }
     Ok(out)
 }
 

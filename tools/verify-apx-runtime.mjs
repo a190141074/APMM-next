@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 // APX 状态和缓存导出使用真实桌面 IPC，全部落点限于新建的隔离目录。
 import { chromium } from "playwright";
 import { spawn } from "node:child_process";
@@ -6,7 +7,7 @@ import { randomUUID, createHash } from "node:crypto";
 import path from "node:path";
 import assert from "node:assert/strict";
 const root=path.resolve(import.meta.dirname,"..");
-const build=JSON.parse(readFileSync(path.join(root,"verification-portable-build.json"),"utf8"));
+const build=JSON.parse(readFileSync(portableBuildReport,"utf8"));
 const output=path.join("B:/APMM-next-work/apx-validation",randomUUID());
 assert.ok(!path.resolve(output).startsWith(root+path.sep));
 const app=path.join(output,"app");cpSync(build.payload,app,{recursive:true});

@@ -27,13 +27,6 @@ use crate::remote_source::{RemoteSourcePool, Source, SourceKind};
 mod app;
 mod appearance;
 mod appearance_commands;
-mod installation;
-mod msi_update;
-mod helper_process;
-mod update_install;
-mod update_gate;
-#[cfg(windows)]
-mod screen_picker;
 mod candidate_management;
 mod catalog;
 mod classification;
@@ -41,26 +34,43 @@ mod commands;
 mod diagnostics;
 mod directory_files;
 mod directory_monitor;
+mod directory_observation;
+mod directory_scan;
 mod directory_sync;
+mod directory_watch;
+mod file_verification;
+mod image_drop;
+mod helper_process;
+#[cfg(test)]
+mod incremental_tests;
+mod installation;
 mod library;
 mod logs;
 mod management_types;
 mod migration_journal;
+mod msi_update;
+mod original_cache;
 mod package;
 mod packages;
 mod preset_domain;
 mod presets;
+#[cfg(windows)]
+mod screen_picker;
+mod update_gate;
+mod update_install;
 mod vault_sync;
+mod workspace_cache;
 pub(crate) use management_types::GlobalPreset;
+mod author;
 mod remote_source;
 mod scan;
 mod scanner;
 mod settings_commands;
 mod task_history;
 mod thumbnails;
+mod update_bootstrap;
 mod update_channel;
 mod update_package;
-mod update_bootstrap;
 mod updates;
 mod vault;
 mod workshop;
@@ -73,11 +83,13 @@ pub(crate) use diagnostics::{
 pub(crate) use packages::*;
 pub(crate) use presets::{preset_apply, preset_delete, preset_restore_all, preset_save};
 pub(crate) use settings_commands::{settings_get, settings_set};
+pub(crate) use update_install::update_apply;
 #[cfg(test)]
 use updates::{find_update_payload, UPDATE_RUNTIME_FILES};
-pub(crate) use update_install::update_apply;
 pub(crate) use updates::{update_cancel, update_check, update_download};
-pub(crate) use workshop::{workshop_install, workshop_list, workshop_uninstall};
+pub(crate) use workshop::{
+    workshop_image, workshop_install, workshop_list, workshop_preflight, workshop_uninstall,
+};
 
 mod preview_engine;
 mod preview_install;
@@ -117,6 +129,7 @@ pub fn run() {
         auxiliary::auxiliary_uninstall,
         auxiliary::auxiliary_check_update,
         image_import::images_inspect,
+        image_drop::images_match_drop,
         updates::update_startup_status,
         updates::update_download_status,
         migration::migration_inspect,
@@ -210,8 +223,25 @@ pub fn run() {
         update_apply,
         update_cancel,
         workshop_list,
+        workshop_image,
+        workshop_preflight,
         workshop_install,
-        workshop_uninstall
+        workshop_uninstall,
+        author::store::author_state,
+        author::store::author_new,
+        author::store::author_save,
+        author::sources::author_add_source,
+        author::cover::author_set_cover,
+        author::sources::author_add_library,
+        author::sources::author_image,
+        author::credentials::author_backup,
+        author::credentials::author_restore,
+        author::snapshot::author_preflight,
+        author::snapshot::author_export,
+        author::remote::author_service,
+        author::remote::author_refresh,
+        author::remote::author_cancel,
+        author::offline::author_sync_published,
     ]);
 }
 
@@ -249,3 +279,6 @@ mod management_tests;
 
 #[cfg(test)]
 mod sync_management_tests;
+
+#[cfg(test)]
+mod preview_release_tests;

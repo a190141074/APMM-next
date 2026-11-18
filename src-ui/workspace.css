@@ -274,6 +274,10 @@
   display: flex;
   gap: 5px;
 }
+.candidate-tool.candidate-reveal {
+  top: 7px;
+  bottom: auto;
+}
 .candidate-add {
   display: flex;
   flex-direction: column;
@@ -301,18 +305,23 @@
   overflow-wrap: anywhere;
 }
 .apx-page {
+  container-type: inline-size;
   overflow: auto;
   min-height: 0;
   height: 100%;
   padding-bottom: 25px;
 }
 .apx-page .page-heading {
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 17px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 .apx-page .action-row {
   flex-wrap: wrap;
+}
+.apx-page .segmented-scroll {
+  margin-bottom: 6px;
 }
 .channel-buttons {
   display: flex;
@@ -321,25 +330,77 @@
   margin: 20px 0 16px;
 }
 .apx-status {
-  padding: 14px 17px;
+  padding: 7px 11px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  margin-bottom: 16px;
+  border-radius: 8px;
   background: var(--accent-light);
-  line-height: 1.7;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 .apx-stats {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-bottom: 19px;
+  gap: 8px;
+  margin: 10px 0 14px;
 }
 .apx-stats .stat {
   min-width: 0;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: none;
+}
+.apx-stat-body {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+.apx-stat-icon {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.apx-stat-body h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--muted);
 }
 .apx-stats .stat strong {
-  font-size: 21px;
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 1.3;
+  letter-spacing: normal;
+}
+.apx-stats .stat > small {
+  display: block;
+  padding: 4px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+  font-size: 11px;
+  color: var(--muted);
+}
+.apx-stats .stat strong,
+.apx-stats .stat > small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+@container (max-width: 650px) {
+  .apx-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width: 350px) {
+  .apx-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .apx-page .settings-card {
   margin-bottom: 14px;
@@ -438,9 +499,6 @@
     grid-template-columns: 170px minmax(0, 1fr);
     gap: 9px;
     padding: 12px;
-  }
-  .apx-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .workspace-header {
     gap: 9px;

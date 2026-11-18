@@ -3,21 +3,40 @@
 use crate::{load_library, save_library, AppState, Settings};
 
 #[tauri::command(rename_all = "camelCase")]
-pub(crate) fn settings_get(state: tauri::State<AppState>) -> Settings {
-    let _guard = state.mutation.lock().ok();
-    load_library().settings
+pub(crate) async fn settings_get(state: tauri::State<'_, AppState>) -> Result<Settings, String> {
+    let mutation = state.mutation.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = mutation.lock().map_err(|_| "库写入锁已损坏")?;
+        Ok(load_library().settings)
+    })
+    .await
+    .map_err(|error| format!("读取设置失败：{error}"))?
 }
 
 #[tauri::command(rename_all = "camelCase")]
-pub(crate) fn settings_set(
+pub(crate) async fn settings_set(
     patch: serde_json::Value,
-    state: tauri::State<AppState>,
+    state: tauri::State<'_, AppState>,
 ) -> Result<Settings, String> {
-    let _guard = state.mutation.lock().map_err(|_| "库写入锁已损坏")?;
+    let mutation = state.mutation.clone();
+    // 配色迁移和设置保存仍持有同一把库锁，但不在窗口线程等待后台扫描。
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = mutation.lock().map_err(|_| "库写入锁已损坏")?;
+        settings_set_inner(patch)
+    })
+    .await
+    .map_err(|error| format!("保存设置失败：{error}"))?
+}
+
+fn settings_set_inner(patch: serde_json::Value) -> Result<Settings, String> {
     let mut lib = load_library();
     if let Some(o) = patch.as_object() {
+        if let Some(value) = o.get("authorMode").and_then(|value| value.as_bool()) {
+            lib.settings.author_mode = value;
+        }
         if let Some(value) = o.get("appearance") {
-            let appearance: crate::appearance::AppearanceSettings = serde_json::from_value(value.clone()).map_err(|_| "配色设置格式无效")?;
+            let appearance: crate::appearance::AppearanceSettings =
+                serde_json::from_value(value.clone()).map_err(|_| "配色设置格式无效")?;
             appearance.validate()?;
             lib.settings.appearance = Some(appearance);
         }

@@ -1,0 +1,21 @@
+[Unit]
+Description=APMM private workshop submission service
+After=network.target
+
+[Service]
+Type=simple
+User=apmm-workshop
+Group=apmm-workshop
+WorkingDirectory=/opt/apmm/workshop-service
+EnvironmentFile=/etc/apmm/workshop.env
+ExecStart=/opt/apmm/venv/bin/uvicorn workshop_service.api:from_env --factory --host 127.0.0.1 --port 18421 --workers 1 --no-access-log --no-proxy-headers
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/apmm-workshop
+
+[Install]
+WantedBy=multi-user.target

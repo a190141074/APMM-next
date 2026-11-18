@@ -1401,10 +1401,13 @@ pub(crate) fn resolve_plugin_platform(requested: Option<&str>) -> String {
 }
 
 #[tauri::command(rename_all = "camelCase")]
-pub(crate) fn plugin_status(platform: Option<String>) -> Result<PluginStatus, String> {
-    Ok(plugin_status_inner(&resolve_plugin_platform(
-        platform.as_deref(),
-    )))
+pub(crate) async fn plugin_status(platform: Option<String>) -> Result<PluginStatus, String> {
+    // 总览也会读取此状态；目录探测和文件摘要校验必须留在阻塞工作线程。
+    tauri::async_runtime::spawn_blocking(move || {
+        plugin_status_inner(&resolve_plugin_platform(platform.as_deref()))
+    })
+    .await
+    .map_err(|error| format!("读取 APX 状态失败：{error}"))
 }
 
 #[tauri::command(rename_all = "camelCase")]

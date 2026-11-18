@@ -97,6 +97,69 @@ pub fn resolve_with_status(
     };
     (cached, status.into())
 }
+
+/// 展示快照只查询校验缓存；首次校验交给原图后台工作线程。
+pub(crate) fn resolve_cached(
+    canonical: &str,
+    value: &serde_json::Value,
+    settings: &Settings,
+) -> (Option<String>, String) {
+    let local = data_dir()
+        .join("assets/outimg")
+        .join(format!("{canonical}.png"));
+    let mut pending = false;
+    if let Some(expected) = value["sha256"].as_str().filter(|v| v.len() == 64) {
+        match crate::original_cache::lookup(&local, false) {
+            Some(Ok(hash)) if hash.eq_ignore_ascii_case(expected) => {
+                return (Some(local.to_string_lossy().into_owned()), "local".into())
+            }
+            None => pending = true,
+            _ => {}
+        }
+    }
+    if !settings.outimg_path.is_empty() {
+        let external = Path::new(&settings.outimg_path).join(format!("{canonical}.png"));
+        match crate::original_cache::lookup(&external, true) {
+            Some(Ok(_)) => {
+                return (
+                    Some(external.to_string_lossy().into_owned()),
+                    "external".into(),
+                )
+            }
+            None => pending = true,
+            _ => {}
+        }
+    }
+    // 预览路径由现有解析器限制在预览缓存内，协议读取时仍检查允许的根目录。
+    let preview = value["previewFile"]
+        .as_str()
+        .and_then(preview_path_for_file)
+        .or_else(|| preview_path_for_file(&format!("{canonical}.webp")))
+        .or_else(|| preview_path_for_file(&format!("{canonical}.png")));
+    let status = if pending {
+        "checking"
+    } else if preview.is_some() {
+        "cache"
+    } else if local.exists() {
+        "invalid"
+    } else if data_dir().join("assets/maps").is_dir() {
+        "missing"
+    } else {
+        "not-extracted"
+    };
+    (preview, status.into())
+}
+
+pub(crate) fn external_names_cached(settings: &Settings) -> Vec<serde_json::Value> {
+    if settings.outimg_path.is_empty() {
+        return vec![];
+    }
+    fs::read_dir(&settings.outimg_path).into_iter().flatten().flatten().filter_map(|entry| {
+        if !entry.file_type().ok()?.is_file() || image_extension(&entry.path()).as_deref() != Some("png") { return None; }
+        let parsed = parse_filename(&entry.file_name().to_string_lossy())?;
+        Some(serde_json::json!({"canonical":parsed.canonical,"section":parsed.section_key,"heroId":parsed.hero_id}))
+    }).collect()
+}
 fn valid_png(path: &Path) -> bool {
     let mut header = [0u8; 24];
     fs::File::open(path)

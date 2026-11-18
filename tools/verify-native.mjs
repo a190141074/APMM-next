@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 // 在 B 盘新建程序副本验证真实 Tauri IPC；所有 Mod 写入均指向测试用 modimg。
 import { spawn } from "node:child_process";
 import { chromium } from "playwright";
@@ -16,7 +17,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 const root = path.resolve(import.meta.dirname, "..");
 const build = JSON.parse(
-  readFileSync(path.join(root, "verification-portable-build.json"), "utf8"),
+  readFileSync(portableBuildReport, "utf8"),
 );
 const plugin = JSON.parse(
   readFileSync(path.join(root, "verification-plugin-build.json"), "utf8"),

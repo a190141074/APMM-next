@@ -8,25 +8,56 @@ import {
   readdirSync,
   statSync,
   symlinkSync,
+  existsSync,
 } from "node:fs";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
+import { releaseDir, reportDir, prepareParent } from "./work-paths.mjs";
 const root = path.resolve(import.meta.dirname, "..");
 const build = JSON.parse(
-  readFileSync(path.join(root, "verification-portable-build.json"), "utf8"),
+  readFileSync(
+    process.env.APMM_BUILD_REPORT ||
+      path.join(reportDir, "portable-build.json"),
+    "utf8",
+  ),
 );
 const version = readFileSync(path.join(root, "VERSION"), "utf8").trim();
 if (version !== build.version) throw Error("需要先构建当前版本便携包");
+const reportPath = prepareParent(
+  process.env.APMM_DISTRIBUTIONS_REPORT ||
+    path.join(reportDir, "distributions.json"),
+);
+const compatDir = path.join(releaseDir, "compatibility");
+const windowsDir = path.join(releaseDir, "windows-x86_64");
+for (const dir of [compatDir, windowsDir]) mkdirSync(dir, { recursive: true });
+if (existsSync(reportPath)) throw Error("发行报告已存在，请使用新目录");
+for (const file of [
+  path.join(compatDir, `APMM-${version}-windows-x86_64-legacy-bridge.zip`),
+  path.join(compatDir, `APMM-${version}-windows-x86_64-compat-0.3.39.zip`),
+  path.join(windowsDir, `APMM-${version}-windows-x86_64.msi`),
+]) {
+  if (existsSync(file)) throw Error(`不覆盖已有发行包：${file}`);
+}
 const work = process.env.APMM_WORK_DIR || "B:/APMM-next-work";
 const stage = path.join(work, "distribution-build", randomUUID());
 mkdirSync(stage, { recursive: true });
 const hash = (file) =>
   createHash("sha256").update(readFileSync(file)).digest("hex");
+const verifyInputs = () => {
+  if (!build.sourceInputs?.length)
+    throw Error("需要包含源码摘要的便携构建报告");
+  for (const file of build.sourceInputs) {
+    if (hash(path.join(root, file.path)) !== file.sha256)
+      throw Error(`源码与本轮便携构建不一致：${file.path}`);
+  }
+};
+verifyInputs();
 const record = (directory, name) => ({
   path: name,
   bytes: statSync(path.join(directory, name)).size,
   sha256: hash(path.join(directory, name)),
 });
+if (hash(build.zip) !== build.sha256) throw Error("便携 ZIP 摘要已变化");
 for (const file of build.files) {
   if (hash(path.join(build.payload, file.path)) !== file.sha256)
     throw Error("便携产物摘要已变化");
@@ -74,8 +105,7 @@ writeFileSync(
   ),
 );
 const bridgeZip = path.join(
-  root,
-  "dist",
+  compatDir,
   `APMM-${version}-windows-x86_64-legacy-bridge.zip`,
 );
 const archive = spawnSync(
@@ -88,12 +118,28 @@ if (archive.status !== 0) throw Error("旧版桥接包生成失败");
 // 已打包的 0.3.39 尚未包含 next 助手白名单，使用独立兼容包，由它自己的 runner 替换助手。
 const compat = path.join(stage, "compat-0.3.39");
 mkdirSync(compat);
-const compatFiles = bridgeFiles.filter(f => f.path !== "astral-updater-next.exe");
-for (const file of compatFiles) copyFileSync(path.join(bridge, file.path), path.join(compat, file.path));
-writeFileSync(path.join(compat, "release-manifest.json"), JSON.stringify({schema:1, version, dataSchema:1, files:compatFiles}, null, 2));
-const compatZip = path.join(root, "dist", `APMM-${version}-windows-x86_64-compat-0.3.39.zip`);
-const compatArchive = spawnSync(path.join(root, "plugins/asset-tool/.venv/Scripts/python.exe"),
-  ["-X", "utf8", "-B", "tools/archive.py", compat, compatZip], {cwd:root, windowsHide:true, stdio:"inherit"});
+const compatFiles = bridgeFiles.filter(
+  (f) => f.path !== "astral-updater-next.exe",
+);
+for (const file of compatFiles)
+  copyFileSync(path.join(bridge, file.path), path.join(compat, file.path));
+writeFileSync(
+  path.join(compat, "release-manifest.json"),
+  JSON.stringify(
+    { schema: 1, version, dataSchema: 1, files: compatFiles },
+    null,
+    2,
+  ),
+);
+const compatZip = path.join(
+  compatDir,
+  `APMM-${version}-windows-x86_64-compat-0.3.39.zip`,
+);
+const compatArchive = spawnSync(
+  path.join(root, "plugins/asset-tool/.venv/Scripts/python.exe"),
+  ["-X", "utf8", "-B", "tools/archive.py", compat, compatZip],
+  { cwd: root, windowsHide: true, stdio: "inherit" },
+);
 if (compatArchive.status !== 0) throw Error("0.3.39 兼容包生成失败");
 
 const msiPayload = path.join(stage, "msi-payload");
@@ -110,6 +156,7 @@ const resourcePath = (name) =>
     .relative(path.join(root, "src-tauri"), path.join(resourceLink, name))
     .replaceAll("\\", "/");
 const resources = {};
+if (hash(build.zip) !== build.sha256) throw Error("便携 ZIP 摘要已变化");
 for (const file of build.files) {
   const target = path.join(msiPayload, file.path);
   mkdirSync(path.dirname(target), { recursive: true });
@@ -160,6 +207,15 @@ const env = {
   CARGO_TARGET_DIR: path.join(root, "src-tauri/target-msvc"),
   PATH: `${process.env.APMM_RUST_BIN || "B:/Rust/rustup/toolchains/stable-x86_64-pc-windows-msvc/bin"};${process.env.PATH}`,
 };
+for (const name of ["astral-mod-manager.exe", "astral-updater.exe"]) {
+  if (
+    hash(path.join(root, "src-tauri/target-msvc/release", name)) !==
+    hash(path.join(build.payload, name))
+  )
+    throw Error("MSI 输入程序与本轮便携包不一致");
+}
+const cargoPath = path.join(root, "src-tauri/Cargo.toml");
+const cargoBefore = readFileSync(cargoPath);
 const result = spawnSync(
   process.execPath,
   [
@@ -173,13 +229,22 @@ const result = spawnSync(
   ],
   { cwd: root, env, windowsHide: true, stdio: "inherit" },
 );
+// Tauri CLI 会把 CRLF 改成 LF；只还原已确认的换行变化，真实源码变化继续拒绝交付。
+const cargoAfter = readFileSync(cargoPath);
+if (!cargoAfter.equals(cargoBefore)) {
+  const normalize = (bytes) => bytes.toString("utf8").replaceAll("\r\n", "\n");
+  if (normalize(cargoAfter) !== normalize(cargoBefore))
+    throw Error("MSI 工具修改了 Cargo.toml 内容，请复核后重新构建");
+  writeFileSync(cargoPath, cargoBefore);
+}
+verifyInputs();
 if (result.status !== 0) throw Error("MSI 构建失败");
 const msiDir = path.join(root, "src-tauri/target-msvc/release/bundle/msi");
 const generated = readdirSync(msiDir).filter(
   (name) => name.includes(version) && name.endsWith(".msi"),
 );
 if (generated.length !== 1) throw Error("MSI 产物不唯一");
-const msi = path.join(root, "dist", `APMM-${version}-windows-x86_64.msi`);
+const msi = path.join(windowsDir, `APMM-${version}-windows-x86_64.msi`);
 copyFileSync(path.join(msiDir, generated[0]), msi);
 const artifacts = [
   {
@@ -200,7 +265,7 @@ for (const file of artifacts)
     `${file.sha256}  ${path.basename(file.path)}\n`,
   );
 writeFileSync(
-  path.join(root, "verification-distributions.json"),
+  reportPath,
   JSON.stringify(
     { version, stage, bridge, msiPayload, msiFiles, artifacts },
     null,

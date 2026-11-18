@@ -5,7 +5,11 @@ import os
 import sys
 from pathlib import Path
 
+from work_paths import report_dir
+
 ROOT = Path(__file__).resolve().parents[1]
+OUTPUT = report_dir()
+VERSION = (ROOT / "VERSION").read_text().strip()
 BASELINE = Path(sys.argv[1])
 SKIP = {"node_modules", ".venv", "__pycache__", "target-msvc", "target", "src-release", "dist", "vendor", ".git"}
 SUFFIXES = {".rs", ".tsx", ".ts", ".css", ".py", ".mjs", ".json", ".toml", ".lock", ".yaml", ".md"}
@@ -100,15 +104,15 @@ for rel, p in sorted(current.items()):
     if not role:
         role = "版本与依赖锁同步" if p.name in {"VERSION", "package.json", "Cargo.toml", "Cargo.lock"} else "本轮开发、迁移、变更或验收文档"
     records.append({"path": rel, "status": "modified" if rel in old else "added", "lines": len(data.decode("utf-8-sig").splitlines()), "role": role, "sha256": hashlib.sha256(data).hexdigest()})
-report = {"version": "0.3.39", "baseline": str(BASELINE), "files": records, "removed": sorted(set(old) - set(current))}
-rows = ["# 0.3.39 受影响文件与职责", "", f"对比只读源码快照 `{BASELINE}`。没有 Git 提交，以下为全部手写代码、生成契约和配置文档差异；构建缓存及验收 JSON 不作为源码。", "", "| 文件 | 变更 | 行数 | 职责 |", "|---|---|---:|---|"]
+report = {"version": VERSION, "baseline": str(BASELINE), "files": records, "removed": sorted(set(old) - set(current))}
+rows = [f"# {VERSION} 源码差异", "", f"对比只读源码快照 `{BASELINE}`。以下为全部手写代码、生成契约和配置文档差异；构建缓存及验收 JSON 不作为源码。", "", "| 文件 | 变更 | 行数 | 职责 |", "|---|---|---:|---|"]
 rows += [f"| `{r['path']}` | {r['status']} | {r['lines']} | {r['role']} |" for r in records]
-(ROOT / "docs/CHANGED-MANAGEMENT-0.3.39.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+(OUTPUT / "changed-source.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
 # 清单写入后再记录自身摘要，避免把上一轮清单的摘要作为本轮证据。
 for record in records:
     data = (ROOT / record["path"]).read_bytes()
     record["sha256"] = hashlib.sha256(data).hexdigest()
     record["lines"] = len(data.decode("utf-8-sig").splitlines())
-Path("B:/APMM-next-work/management-changed-source.json").write_text(json.dumps([r["path"] for r in records], ensure_ascii=False, indent=2), encoding="utf-8")
-(ROOT / "verification-management-source.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+(OUTPUT / "changed-files.json").write_text(json.dumps([r["path"] for r in records], ensure_ascii=False, indent=2), encoding="utf-8")
+(OUTPUT / "management-source.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 print(json.dumps({"files": len(records), "removed": report["removed"], "review": [{"path": r["path"], "lines": r["lines"]} for r in records if r["lines"] > 500 and Path(r["path"]).suffix in {".rs", ".tsx", ".ts", ".mjs", ".py"} and "/generated/" not in r["path"]]}, ensure_ascii=False))

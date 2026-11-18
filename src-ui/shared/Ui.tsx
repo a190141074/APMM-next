@@ -71,13 +71,15 @@ export function AssetImage({
           <span>
             {path && failed === src
               ? "图片加载失败"
-              : status === "missing"
-                ? "原图文件缺失"
-                : status === "invalid"
-                  ? "原图校验失败"
-                  : status === "not-extracted"
-                    ? "原图尚未提取"
-                    : "暂无预览"}
+              : status === "checking"
+                ? "原图校验中"
+                : status === "missing"
+                  ? "原图文件缺失"
+                  : status === "invalid"
+                    ? "原图校验失败"
+                    : status === "not-extracted"
+                      ? "原图尚未提取"
+                      : "暂无预览"}
           </span>
         </div>
       )}

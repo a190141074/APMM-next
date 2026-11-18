@@ -1,0 +1,26 @@
+[
+  {
+    "key": "heroes-cards",
+    "sections": ["card", "card2", "card_in_game", "thin_card"]
+  },
+  { "key": "heroes-busts", "sections": ["busts"] },
+  { "key": "heroes-art", "sections": ["standing_paintings", "role_photos"] },
+  {
+    "key": "heroes-other",
+    "sections": [
+      "item_icons",
+      "level_up",
+      "profile_photos",
+      "land",
+      "platform",
+      "account_background"
+    ]
+  },
+  { "key": "cards", "sections": ["hand_card", "event_card", "map_event"] },
+  {
+    "key": "monsters",
+    "sections": ["monster_card", "monster_bust", "monster_profile"]
+  },
+  { "key": "chips", "sections": ["relic", "relic_icon"] },
+  { "key": "cursors", "sections": ["cursor"] }
+]

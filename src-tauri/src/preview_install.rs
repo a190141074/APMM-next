@@ -14,7 +14,7 @@ pub fn install(
     } else {
         &remote.bundle_key
     };
-    if !["all", "heroes", "cards", "monsters"].contains(&key) {
+    if !valid_preview_bundle_key(key) {
         return Err("未知预览分类".into());
     }
     let expected = if key == "all" {

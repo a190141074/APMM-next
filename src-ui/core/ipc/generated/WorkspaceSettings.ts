@@ -2,4 +2,4 @@
 import type { AppearanceSettings } from "./AppearanceSettings";
 import type { PresetSummary } from "./PresetSummary";
 
-export type WorkspaceSettings = { appearance?: AppearanceSettings, outimgPath: string, pluginPlatform: string | null, searchMode: string, presets: Array<PresetSummary>, monitorDirectories?: boolean, updateAutoCheck: boolean, updateIntervalHours: number, updateSkippedVersion: string | null, updateLastCheckedAt: number | null, };
+export type WorkspaceSettings = { authorMode: boolean, appearance?: AppearanceSettings, outimgPath: string, pluginPlatform: string | null, searchMode: string, presets: Array<PresetSummary>, monitorDirectories?: boolean, updateAutoCheck: boolean, updateIntervalHours: number, updateSkippedVersion: string | null, updateLastCheckedAt: number | null, };

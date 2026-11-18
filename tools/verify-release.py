@@ -1,8 +1,9 @@
-"""从实际 ZIP 重新核对文件清单、摘要和发行边界，记录磁盘缓存占用。"""
+"""从实际 ZIP 重新核对文件清单、摘要和发行边界，只检查本轮明确指定的产物。"""
 import hashlib
 import json
 import re
-import shutil
+import argparse
+from work_paths import build_report, report_dir
 import zipfile
 from pathlib import Path
 
@@ -11,12 +12,18 @@ ROOT = Path(__file__).resolve().parents[1]
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--build-report", type=Path, default=build_report())
+parser.add_argument("--plugin-report", type=Path)
+args = parser.parse_args()
+inputs = [("main", args.build_report, "release-manifest.json")]
+if args.plugin_report:
+    inputs.append(("plugin", args.plugin_report, "plugin.json"))
 reports = []
-for kind, report_file, manifest_file in [
-    ("main", "verification-portable-build.json", "release-manifest.json"),
-    ("plugin", "verification-plugin-build.json", "plugin.json"),
-]:
-    build = json.loads((ROOT / report_file).read_text(encoding="utf-8"))
+for kind, report_file, manifest_file in inputs:
+    build = json.loads(report_file.read_text(encoding="utf-8-sig"))
+    if kind == "main":
+        assert build["version"] == (ROOT / "VERSION").read_text().strip()
     archive_path = Path(build["zip"])
     assert digest(archive_path.read_bytes()) == build["sha256"]
     with zipfile.ZipFile(archive_path) as archive:
@@ -24,6 +31,8 @@ for kind, report_file, manifest_file in [
         assert len({name.casefold() for name in names}) == len(names)
         assert not any(".." in Path(name).parts or Path(name).is_absolute() for name in names)
         manifest = json.loads(archive.read(manifest_file))
+        if kind == "main":
+            assert manifest["version"] == build["version"]
         expected = {record["path"] for record in manifest["files"]} | {manifest_file}
         if kind == "plugin":
             expected.add("plugin.sig")
@@ -36,7 +45,7 @@ for kind, report_file, manifest_file in [
         assert not any("private" in n.lower() or n.lower().endswith((".pem", ".key")) for n in names)
         assert not any(re.search(r"(^|/)(UT_|cursor_(up|down)\.)", n) for n in names)
         if kind == "main":
-            assert all(("/" not in n or n in {"licenses/LICENSE.txt", "licenses/THIRD_PARTY_NOTICES.md"}) and not n.lower().endswith((".py", ".pyd", ".png", ".webp")) for n in names)
+            assert all(("/" not in n or n in {"licenses/LICENSE.txt", "licenses/THIRD_PARTY_NOTICES.md", "licenses/NOTICE.md"}) and not n.lower().endswith((".py", ".pyd", ".png", ".webp")) for n in names)
             assert "THIRD_PARTY_NOTICES.md" not in names
         reports.append({"kind": kind, "path": str(archive_path), "bytes": archive_path.stat().st_size,
                         "sha256": build["sha256"], "entries": names, "verifiedFiles": len(manifest["files"])})
@@ -46,18 +55,7 @@ dependencies = dependency_file.read_text(encoding="utf-8")
 assert "index.html" in dependencies
 assert not re.search(r"[/\\]src[/\\]previews[/\\]", dependencies, re.I)
 
-def directory_size(path):
-    return sum(p.stat().st_size for p in path.rglob("*") if p.is_file() and not p.is_symlink()) if path.exists() else 0
-
-caches = []
-for directory, reason in [
-    (ROOT / "src-tauri/target-msvc", "复用的 MSVC 编译/测试缓存"),
-    (ROOT / "node_modules", "锁定的前端开发依赖"),
-    (ROOT / "plugins/asset-tool/.venv", "独立资产插件的构建环境"),
-    (Path("B:/APMM-next-work"), "源码快照、真实资产结果、隔离 IPC/更新副本、可复现构建暂存和本地签名密钥"),
-]:
-    caches.append({"path": str(directory), "bytes": directory_size(directory), "retainedReason": reason})
-disk = {drive: shutil.disk_usage(drive + ":/").free for drive in "CBD" if Path(drive + ":/").exists()}
-report = {"packages": reports, "frontendEmbedded": True, "caches": caches, "freeBytes": disk}
-(ROOT / "verification-release-audit.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-print(json.dumps({"packages": [{k: v for k, v in r.items() if k != "entries"} for r in reports], "caches": caches, "freeBytes": disk}, ensure_ascii=False))
+report = {"packages": reports, "frontendEmbedded": True}
+output = report_dir() / "release-audit.json"
+output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+print(json.dumps({"report": str(output), "packages": [{k: v for k, v in r.items() if k != "entries"} for r in reports]}, ensure_ascii=False))

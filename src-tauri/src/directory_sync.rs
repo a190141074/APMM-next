@@ -11,7 +11,34 @@ pub(crate) struct SyncResult {
     pub errors: Vec<String>,
 }
 
-/// 调用者持有库写入锁。每次事件触发都重算内容哈希，不使用秒级扫描缓存。
+/// 按完整槽位和摘要读取当前候选，保留旧库跨 map 的查找顺序与独立信息。
+/// 扫描每个游戏文件时不能复制、排序整个资源库；新增候选也必须立即可见。
+fn matching_candidate<'a>(
+    lib: &'a Library,
+    slot: &ResourceSlot,
+    hash: &str,
+) -> Option<&'a FileEntry> {
+    let category = if slot.section_key == "temporary" {
+        "heroes".to_string()
+    } else {
+        category_of(&slot.section_key)
+    };
+    if category != slot.category {
+        return None;
+    }
+    [&lib.heroes, &lib.monsters].into_iter().find_map(|map| {
+        map.get(&slot.hero_id)?
+            .sections
+            .get(&slot.section_key)?
+            .resources
+            .get(&slot.canonical)?
+            .files
+            .iter()
+            .find(|file| file.hash == hash)
+    })
+}
+
+/// 兼容入口执行强制完整校验；被动监听通过预先采集的观察结果提交。
 pub(crate) fn synchronize(
     lib: &mut Library,
     vault: &Path,
@@ -34,15 +61,43 @@ pub(crate) fn synchronize_controlled(
     commit: impl Fn(&Library) -> Result<(), String>,
     checkpoint: impl Fn() -> Result<(), String>,
 ) -> Result<SyncResult, String> {
-    let before = serde_json::to_vec(lib).map_err(|e| e.to_string())?;
+    let observation = crate::directory_observation::full(vault, game, &checkpoint)?;
+    synchronize_observed(lib, vault, game, &observation, commit, checkpoint)
+}
+
+/// 调用者持有库写入锁；观察已在锁外完成，仍保留候选归属和文件事务。
+pub(crate) fn synchronize_observed(
+    lib: &mut Library,
+    vault: &Path,
+    game: &Path,
+    observation: &crate::directory_observation::Observation,
+    commit: impl Fn(&Library) -> Result<(), String>,
+    checkpoint: impl Fn() -> Result<(), String>,
+) -> Result<SyncResult, String> {
+    checkpoint()?;
+    let before = serde_json::to_value(&*lib).map_err(|e| e.to_string())?;
     let mut result = SyncResult::default();
-    result.errors.extend(crate::vault_sync::synchronize(
-        lib,
-        vault,
-        &commit,
-        &checkpoint,
-    )?);
-    if game.is_dir() {
+    result
+        .errors
+        .extend(crate::vault_sync::synchronize_observed(
+            lib,
+            vault,
+            observation.root(vault)?,
+            &commit,
+            &checkpoint,
+        )?);
+    if let Some(game_observation) = observation.roots.get(game) {
+        // 本轮游戏文件不完整时保留上次应用状态，不能把坏图当成未应用。
+        let game_errors = game_observation
+            .files
+            .values()
+            .filter_map(|v| v.as_ref().err().cloned())
+            .collect::<Vec<_>>();
+        if !game_errors.is_empty() {
+            result.errors.extend(game_errors);
+            result.changed = before != serde_json::to_value(&*lib).map_err(|e| e.to_string())?;
+            return Ok(result);
+        }
         for (_, map) in [("heroes", &mut lib.heroes), ("monsters", &mut lib.monsters)] {
             for h in map.values_mut() {
                 for s in h.sections.values_mut() {
@@ -52,7 +107,7 @@ pub(crate) fn synchronize_controlled(
                 }
             }
         }
-        let paths = images_under(game)?;
+        let paths = game_observation.files.keys().cloned().collect::<Vec<_>>();
         let names = paths
             .iter()
             .map(|p| scan_relative_key(game, p))
@@ -63,11 +118,11 @@ pub(crate) fn synchronize_controlled(
             checkpoint()?;
             let (name, disabled) = image_name(&path).unwrap();
             let relative = scan_relative_key(game, &path);
-            if let Err(e) = image_import::validate_png(&path) {
-                result.errors.push(format!("{}：{e}", path.display()));
-                continue;
-            }
-            let hash = sha256_file(&path)?;
+            let hash = game_observation.files[&path]
+                .as_ref()
+                .map_err(Clone::clone)?
+                .hash
+                .clone();
             let parsed_slot = parse_filename(&name).map(|p| ResourceSlot::from_parsed(&p));
             let binding = old_bindings
                 .get(&relative)
@@ -77,10 +132,7 @@ pub(crate) fn synchronize_controlled(
                 .map(|b| b.slot.clone())
                 .or_else(|| parsed_slot.clone())
                 .unwrap_or_else(|| temporary(&name, &hash));
-            let old_file = candidates(lib)
-                .into_iter()
-                .find(|(s, f, _)| *s == slot && f.hash == hash)
-                .map(|(_, f, _)| f);
+            let old_file = matching_candidate(lib, &slot, &hash);
             if old_file.is_none() {
                 let inherited = old_bindings
                     .iter()
@@ -88,10 +140,8 @@ pub(crate) fn synchronize_controlled(
                     .collect::<Vec<_>>();
                 let info = if inherited.len() == 1 {
                     let b = inherited[0].1;
-                    candidates(lib)
-                        .into_iter()
-                        .find(|(s, f, _)| *s == b.slot && f.hash == hash)
-                        .map(|(_, f, _)| f.info)
+                    matching_candidate(lib, &b.slot, &hash)
+                        .map(|file| file.info.clone())
                         .unwrap_or_default()
                 } else {
                     CandidateInfo::default()
@@ -193,7 +243,7 @@ pub(crate) fn synchronize_controlled(
             }
         }
     }
-    result.changed = before != serde_json::to_vec(lib).map_err(|e| e.to_string())?;
+    result.changed = before != serde_json::to_value(lib).map_err(|e| e.to_string())?;
     Ok(result)
 }
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -206,5 +256,65 @@ impl From<&ResourceSlot> for ResourceSlotKey {
             s.section_key.clone(),
             s.canonical.clone(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sync_lookup_keeps_same_hash_slots_and_observes_new_candidates() {
+        let mut lib = Library::default();
+        let mut slot = ResourceSlot {
+            category: category_of("cursor"),
+            hero_id: "cursor".into(),
+            section_key: "cursor".into(),
+            canonical: "cursor_up".into(),
+        };
+        for (name, note) in [
+            ("cursor_up", "抬起独立信息"),
+            ("cursor_down", "按下独立信息"),
+        ] {
+            slot.canonical = name.into();
+            put_candidate(
+                &mut lib,
+                &slot,
+                FileEntry {
+                    hash: "same-content".into(),
+                    info: CandidateInfo {
+                        note: note.into(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            );
+        }
+        for name in ["cursor_up", "cursor_down"] {
+            slot.canonical = name.into();
+            let expected = candidates(&lib)
+                .into_iter()
+                .find(|(candidate, file, _)| candidate == &slot && file.hash == "same-content")
+                .unwrap()
+                .1;
+            assert_eq!(
+                matching_candidate(&lib, &slot, "same-content")
+                    .unwrap()
+                    .info,
+                expected.info
+            );
+            assert!(matching_candidate(&lib, &slot, "not-present").is_none());
+        }
+        put_candidate(
+            &mut lib,
+            &slot,
+            FileEntry {
+                hash: "just-added".into(),
+                ..Default::default()
+            },
+        );
+        assert!(matching_candidate(&lib, &slot, "just-added").is_some());
+        slot.category = "monsters".into();
+        assert!(matching_candidate(&lib, &slot, "same-content").is_none());
     }
 }

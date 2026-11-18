@@ -5,6 +5,7 @@ import json
 import re
 from pathlib import Path
 from PIL import Image
+from work_paths import report_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
@@ -64,7 +65,7 @@ if '50075' in chips:
 save(ROOT / 'config/chip_names.json', chips)
 
 official = {}
-for value in read(ROOT / 'src/manifest.json'):
+for value in read(ROOT / 'config/manifest.json'):
     if 'preview' not in value:
         official[value['canonical']] = value
 for path in sorted((args.assets / 'maps').glob('*.json')):
@@ -132,6 +133,6 @@ save(ROOT / 'config/resources.json', records)
 summary = {'resources': len(records), 'sections': len({r['section'] for r in records}),
            'namedChipResources': len(chips),
            'unknownNames': [{'key': r['key'], 'category': r['category']} for r in records if not r['nameKnown']]}
-save(ROOT / 'docs/catalog-audit.json', summary)
+save(report_dir() / 'catalog-audit.json', summary)
 print(json.dumps({k: v for k, v in summary.items() if k != 'unknownNames'}, ensure_ascii=False))
 print('未确认名称：', len(summary['unknownNames']))

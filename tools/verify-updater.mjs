@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 // 通过真实 Windows 进程验证更新助手：启动确认、无法启动和中断恢复三条路径。
 import {spawnSync} from 'node:child_process';
 import {mkdirSync,readFileSync,writeFileSync,copyFileSync,existsSync} from 'node:fs';
@@ -5,7 +6,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.resolve(import.meta.dirname,'..');
-const build=JSON.parse(readFileSync('verification-portable-build.json','utf8'));
+const build=JSON.parse(readFileSync(portableBuildReport,'utf8'));
 const work=process.env.APMM_WORK_DIR||'B:/APMM-next-work';const stage=path.join(work,'staging','updater-acceptance-'+randomUUID());mkdirSync(stage,{recursive:true});
 const env={...process.env,APMM_WORK_DIR:work,TEMP:path.join(work,'temp'),TMP:path.join(work,'temp')};
 const source=path.join(stage,'probe.rs');

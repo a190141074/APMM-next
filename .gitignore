@@ -57,3 +57,23 @@ Thumbs.db
 *-token.txt
 *-token.json
 *.key
+
+# 投稿与审核资料保持在独立工作盘，意外放入源码时也不纳入版本控制。
+*.apmmkey
+workshop-service/private/
+workshop-service/inbox/
+workshop-service/reviews/
+workshop-service/prepared/
+*.sqlite
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# 过程记录、差异清单和验收证据保存在独立工作盘。
+/docs/ACCEPTANCE*.md
+/docs/CHANGED*.md
+/docs/CHANGESET*.md
+/docs/REFERENCE-REVIEW*.md
+/docs/*audit*.json
+/docs/legacy-baseline.json
+/docs/changed-files*.json

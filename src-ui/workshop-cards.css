@@ -1,0 +1,400 @@
+/* 工坊双视图、固定操作详情和投稿预览共用布局。 */
+.workshop-page,
+.author-card-preview {
+  container: workshop / inline-size;
+}
+.workshop-page .page-heading {
+  margin-bottom: 12px;
+}
+.workshop-page .workshop-filters {
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.workshop-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+.workshop-grid.work-layout-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(176px, 100%), 1fr));
+}
+@container workshop (min-width: 740px) {
+  .workshop-grid.work-layout-horizontal {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.workshop-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 10px;
+  overflow: hidden;
+  color: var(--text);
+  text-align: left;
+  transition: border-color 0.15s;
+}
+.workshop-card:hover,
+.workshop-card:focus-within {
+  border-color: var(--accent);
+}
+.work-card-main {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  padding: 9px;
+}
+.work-card-heading,
+.work-card-info {
+  min-width: 0;
+}
+.work-card-cover {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--bg);
+}
+.workshop-image {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--muted);
+}
+.workshop-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.workshop-image > span {
+  font-size: 12px;
+}
+.work-card-cover .author-thumbnail {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+.work-card-author,
+.work-card-title,
+.work-card-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.work-card-author {
+  -webkit-line-clamp: 1;
+  line-height: 1.35;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+.work-card-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 6px;
+}
+.work-card-title {
+  min-width: 0;
+  -webkit-line-clamp: 2;
+  font-size: 14px;
+  line-height: 1.3;
+  margin: 0;
+}
+.work-card-title button {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.work-card-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.work-card-description {
+  -webkit-line-clamp: 2;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+  white-space: pre-wrap;
+  margin: 0;
+}
+.work-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.work-card-info .work-tags {
+  gap: 3px;
+  max-height: 37px;
+  overflow: clip;
+}
+.work-card-info :is(.work-tag, .work-category) {
+  line-height: 15px;
+  padding: 0 5px;
+}
+.work-category,
+.work-tag {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 18px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.work-category,
+.work-tag.highlighted {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.work-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px 8px;
+  padding: 5px 9px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.work-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 7px;
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.work-card-actions {
+  flex-shrink: 0;
+}
+.work-card-actions .button {
+  min-height: 26px;
+  padding: 2px 7px;
+  font-size: 11px;
+}
+.work-layout-grid .work-card-main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+}
+.work-layout-grid .work-card-cover {
+  width: 100%;
+}
+.work-layout-grid .work-card-description {
+  display: none;
+}
+.work-layout-grid .work-card-footer {
+  flex-wrap: wrap;
+}
+.work-layout-grid .work-card-actions {
+  margin-left: auto;
+}
+.work-layout-switch {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  gap: 3px;
+}
+.work-layout-switch button {
+  padding: 5px 9px;
+  white-space: nowrap;
+  color: var(--muted);
+  border-radius: 4px;
+  font-size: 12px;
+}
+.work-layout-switch button[aria-pressed="true"] {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.modal.workshop-detail {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.workshop-detail > header {
+  flex-shrink: 0;
+}
+.work-detail-toolbar {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.work-detail-toolbar > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.work-detail-toolbar .action-row {
+  margin: 0;
+}
+.work-detail-notice {
+  margin: 0;
+  padding: 8px 22px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.work-detail-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px;
+  overscroll-behavior: contain;
+}
+.work-detail-intro {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+}
+.work-detail-intro aside {
+  min-width: 0;
+  font-size: 12px;
+}
+.work-detail-intro aside > .workshop-image {
+  border-radius: 8px;
+}
+.work-detail-description {
+  min-width: 0;
+}
+.work-detail-description > p {
+  line-height: 1.8;
+}
+.work-credit-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.work-credit-link {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.work-detail-scroll > section {
+  border-top: 1px solid var(--border);
+  margin-top: 22px;
+  padding-top: 8px;
+}
+.work-detail-scroll .credit-row {
+  overflow-wrap: anywhere;
+  gap: 12px;
+}
+.work-detail-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 112px);
+  gap: 12px;
+}
+.work-detail-previews .workshop-image {
+  border-radius: 6px;
+}
+.author-cover-editor {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+.author-cover-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.author-cover-main > .author-thumbnail {
+  width: 144px;
+  height: 144px;
+  flex-basis: 144px;
+}
+.author-cover-empty {
+  display: grid;
+  place-items: center;
+  width: 144px;
+  height: 144px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.author-card-preview {
+  margin: 20px 0;
+}
+.author-card-preview > .work-layout-switch {
+  width: fit-content;
+  margin-bottom: 12px;
+}
+.author-card-preview > .work-layout-horizontal {
+  max-width: 620px;
+}
+.author-card-preview > .work-layout-grid {
+  max-width: 280px;
+}
+.author-tag-editor {
+  grid-column: 1 / -1;
+}
+.author-tag-input {
+  display: flex;
+  gap: 8px;
+}
+.author-tag-input input {
+  flex: 1;
+  min-width: 0;
+}
+.author-tag-editor .work-tags {
+  margin-top: 8px;
+}
+.author-tag-editor .work-tag button {
+  margin-left: 6px;
+}
+.author-fields textarea.author-credit-input {
+  min-height: 60px;
+}
+@container workshop (max-width: 370px) {
+  .work-card-main {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .work-detail-intro {
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 14px;
+  }
+  .work-detail-toolbar,
+  .work-detail-scroll {
+    padding: 12px;
+  }
+  .work-detail-toolbar .action-row {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 430px) {
+  .work-detail-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .work-detail-intro aside > .workshop-image {
+    max-width: 160px;
+  }
+}

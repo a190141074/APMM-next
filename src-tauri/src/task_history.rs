@@ -14,7 +14,10 @@ pub fn retry_args(kind: &str, args: &Value) -> Option<Value> {
     fn contains_secret(v: &Value) -> bool {
         match v {
             Value::Object(fields) => fields.iter().any(|(key, value)| {
-                key.to_ascii_lowercase().contains("password") || contains_secret(value)
+                ["password", "credential", "authorization", "token", "secret"]
+                    .iter()
+                    .any(|word| key.to_ascii_lowercase().contains(word))
+                    || contains_secret(value)
             }),
             Value::Array(values) => values.iter().any(contains_secret),
             _ => false,

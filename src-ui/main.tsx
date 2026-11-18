@@ -11,6 +11,11 @@ import "./management-ui.css";
 import "./appearance.css";
 import "./theme-editor.css";
 import "./settings.css";
+import "./workshop.css";
+import "./overview.css";
+import "./resource-list.css";
+import "./resource-drop.css";
+import "./scrollbars.css";
 const client = new QueryClient({
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
 });

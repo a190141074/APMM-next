@@ -1,6 +1,21 @@
 // 由 tools/sync-ipc.mjs 从 Rust 命令注册面生成。
 export const IPC = {
   "asset_scan": "asset_scan",
+  "author_add_library": "author_add_library",
+  "author_add_source": "author_add_source",
+  "author_backup": "author_backup",
+  "author_cancel": "author_cancel",
+  "author_export": "author_export",
+  "author_image": "author_image",
+  "author_new": "author_new",
+  "author_preflight": "author_preflight",
+  "author_refresh": "author_refresh",
+  "author_restore": "author_restore",
+  "author_save": "author_save",
+  "author_service": "author_service",
+  "author_set_cover": "author_set_cover",
+  "author_state": "author_state",
+  "author_sync_published": "author_sync_published",
   "auxiliary_check_update": "auxiliary_check_update",
   "auxiliary_status": "auxiliary_status",
   "auxiliary_uninstall": "auxiliary_uninstall",
@@ -23,6 +38,7 @@ export const IPC = {
   "hero_detail": "hero_detail",
   "heroes_list": "heroes_list",
   "images_inspect": "images_inspect",
+  "images_match_drop": "images_match_drop",
   "import_files": "import_files",
   "import_files_to_target": "import_files_to_target",
   "log_client_error": "log_client_error",
@@ -100,9 +116,11 @@ export const IPC = {
   "update_download": "update_download",
   "update_download_status": "update_download_status",
   "update_startup_status": "update_startup_status",
+  "workshop_image": "workshop_image",
   "workshop_install": "workshop_install",
   "workshop_list": "workshop_list",
+  "workshop_preflight": "workshop_preflight",
   "workshop_uninstall": "workshop_uninstall",
   "workspace_snapshot": "workspace_snapshot"
 } as const;
-export const EVENTS = { taskProgress: "task-progress", workspaceChanged: "workspace-changed" } as const;
+export const EVENTS = { taskProgress: "task-progress", workspaceChanged: "workspace-changed", workspaceUpdated: "workspace-updated" } as const;

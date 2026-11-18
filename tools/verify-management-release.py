@@ -1,6 +1,7 @@
 """审计本轮管理器 ZIP、实际 EXE、版本文件和原生报告，不借用历史插件报告。"""
 import hashlib
 import json
+from work_paths import build_report, distributions_report, report_dir
 import re
 import shutil
 import zipfile
@@ -9,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sha = lambda data: hashlib.sha256(data).hexdigest()
 read_json = lambda name: json.loads((ROOT / name).read_text(encoding="utf-8"))
-build = read_json("verification-portable-build.json")
+build = json.loads(build_report().read_text("utf-8-sig"))
 native = read_json("verification-management-native.json")
 ui = read_json("verification-management-ui.json")
 version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()

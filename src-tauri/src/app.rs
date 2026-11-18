@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::{atomic::AtomicBool, Arc, Mutex};
 
-use crate::{cleanup_library_inner, migrate_vault, mime_of, not_found, percent_decode, AppState};
+use crate::{migrate_vault, mime_of, not_found, percent_decode, AppState};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run<F>(handler: F)
@@ -41,7 +41,7 @@ where
         return;
     }
     let _migrated = migrate_vault();
-    let _cleaned = cleanup_library_inner();
+    // 启动先保留已存记录，外部重命名和删除交给有文件标识的后台同步判定。
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())

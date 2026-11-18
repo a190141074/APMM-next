@@ -1,16 +1,21 @@
 import { mockManagement } from "./mockManagement";
 import { IPC } from "./commands";
+import { version as appVersion } from "../../../package.json";
 import type { WorkspaceSnapshot } from "./generated/WorkspaceSnapshot";
 import type { ResourceRecord } from "./generated/ResourceRecord";
 const rows: ResourceRecord[] = [];
 let loaded = false;
 export const demo: WorkspaceSnapshot = {
-  version: "0.4.1",
+  revision: 0,
+  version: appVersion,
   dataDir: "本地预览（应用操作仅影响本页）",
   gameDir: "Astral Party",
   resources: rows,
   settings: {
-    appearance: JSON.parse(localStorage.getItem("apmm.demo-appearance") || "null"),
+    authorMode: localStorage.getItem("apmm.demo-author-mode") === "true",
+    appearance: JSON.parse(
+      localStorage.getItem("apmm.demo-appearance") || "null",
+    ),
     outimgPath: "",
     searchMode: "smart",
     updateSkippedVersion: null,
@@ -48,8 +53,17 @@ export async function mockCall<T>(
     return undefined as T;
   }
   if (command === IPC.settings_set) {
+    if ("authorMode" in args.patch)
+      localStorage.setItem(
+        "apmm.demo-author-mode",
+        String(args.patch.authorMode),
+      );
     Object.assign(demo.settings, args.patch);
-    if (args.patch.appearance) localStorage.setItem("apmm.demo-appearance", JSON.stringify(args.patch.appearance));
+    if (args.patch.appearance)
+      localStorage.setItem(
+        "apmm.demo-appearance",
+        JSON.stringify(args.patch.appearance),
+      );
     return demo.settings as T;
   }
   if (command === IPC.workshop_list)
@@ -82,8 +96,8 @@ export async function mockCall<T>(
   if (command === IPC.update_check)
     return {
       available: false,
-      currentVersion: "0.4.1",
-      latestVersion: "0.4.1",
+      currentVersion: appVersion,
+      latestVersion: appVersion,
       message: "浏览器预览不检查软件更新",
     } as T;
   if (command === IPC.update_startup_status) return null as T;

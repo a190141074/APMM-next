@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 // 实际 APMM 在隔离目录执行同版本更新，验证 UI 就绪确认与数据保留的完整握手。
 import { spawn, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
@@ -13,7 +14,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 const root = path.resolve(import.meta.dirname, "..");
 const build = JSON.parse(
-  readFileSync(path.join(root, "verification-portable-build.json"), "utf8"),
+  readFileSync(portableBuildReport, "utf8"),
 );
 const incoming = process.env.APMM_UPDATE_INCOMING_ZIP;
 if (incoming) {

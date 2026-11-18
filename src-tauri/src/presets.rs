@@ -27,13 +27,19 @@ pub(crate) fn preset_save(
     preset_create(name, "global".into(), vec![], state)
 }
 #[tauri::command(rename_all = "camelCase")]
-pub(crate) fn preset_detail(
+pub(crate) async fn preset_detail(
     id: String,
-    state: tauri::State<AppState>,
+    state: tauri::State<'_, AppState>,
 ) -> Result<PresetPreview, String> {
-    let _guard = state.mutation.lock().map_err(|_| "库写入锁已损坏")?;
-    let lib = load_library();
-    Ok(preview(&lib, find(&lib, &id)?))
+    let mutation = state.mutation.clone();
+    // 预设页可以在目录同步期间打开，读取时等待库锁不能阻塞窗口消息。
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = mutation.lock().map_err(|_| "库写入锁已损坏")?;
+        let lib = load_library();
+        Ok(preview(&lib, find(&lib, &id)?))
+    })
+    .await
+    .map_err(|error| format!("读取预设失败：{error}"))?
 }
 #[tauri::command(rename_all = "camelCase")]
 pub(crate) fn preset_update(

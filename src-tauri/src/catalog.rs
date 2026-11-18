@@ -200,7 +200,7 @@ pub(crate) fn manifest_section_entries(section_key: &str) -> Vec<(String, String
 
 /* ============ 嵌入资源清单（previews manifest） ============ */
 
-pub(crate) const HERO_MANIFEST: &str = include_str!("../../src/manifest.json");
+pub(crate) const HERO_MANIFEST: &str = include_str!("../../config/manifest.json");
 
 pub(crate) fn manifest_canonicals(hero_id: &str, section_key: &str) -> Vec<String> {
     #[derive(Deserialize)]

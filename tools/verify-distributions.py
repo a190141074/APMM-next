@@ -1,13 +1,14 @@
 """复核本版本三个发行物的实际字节、清单和旧版白名单，不扫描无关缓存。"""
 import hashlib
 import json
+from work_paths import build_report, distributions_report, report_dir
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 read = lambda name: json.loads((ROOT / name).read_text(encoding="utf-8-sig"))
 digest = lambda value: hashlib.sha256(value).hexdigest()
-report = read("verification-distributions.json")
+report = json.loads(distributions_report().read_text("utf-8-sig"))
 version = (ROOT / "VERSION").read_text().strip()
 assert report["version"] == version
 legacy_allowed = {
@@ -42,5 +43,5 @@ for artifact in report["artifacts"]:
     else:
         checks.append(artifact)
 result = {"version": version, "artifacts": checks}
-(ROOT / "verification-distribution-audit.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+(report_dir() / "distribution-audit.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 print(json.dumps(result, ensure_ascii=False))

@@ -4,7 +4,7 @@
     "ownerRepo": "astral-weird-egg/astral-party-mod-manager-assets",
     "rawPrefix": "https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets/-/git/raw/main/",
     "bundleDir": "bundles",
-    "manifestPath": "preview-manifest.json"
+    "manifestPath": "preview-manifest-v4.json"
   },
   "update": {
     "enabled": true,
@@ -28,5 +28,9 @@
     "bytes": 262144,
     "connectTimeoutSecs": 10,
     "probeTimeoutSecs": 20
+  },
+  "submission": {
+    "enabled": false,
+    "apiBase": ""
   }
 }

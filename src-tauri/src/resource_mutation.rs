@@ -1224,12 +1224,10 @@ pub(crate) fn preview_check_update_blocking() -> PreviewStatus {
                 } else {
                     bundle.key.as_str()
                 };
-                status
-                    .bundles
-                    .iter()
-                    .find(|local| local.key == local_key)
-                    .and_then(|local| local.local_version.as_deref())
-                    != Some(bundle.version.as_str())
+                preview_needs_update(
+                    status.bundles.iter().find(|local| local.key == local_key),
+                    &bundle.version,
+                )
             }));
         }
         Err(error) => status.error = Some(error),
@@ -1269,8 +1267,14 @@ pub(crate) fn emit_preview_progress(
 pub(crate) fn bundle_display_name(key: &str) -> &'static str {
     match key {
         "heroes" => "英雄",
+        "heroes-cards" => "角色卡图",
+        "heroes-busts" => "角色交互",
+        "heroes-art" => "角色立绘",
+        "heroes-other" => "角色其他资源",
         "cards" => "卡面",
         "monsters" => "怪物",
+        "chips" => "芯片",
+        "cursors" => "鼠标",
         _ => "预览",
     }
 }
@@ -1371,12 +1375,10 @@ pub(crate) fn preview_download_blocking(
                 } else {
                     bundle.bundle_key.as_str()
                 };
-                status
-                    .bundles
-                    .iter()
-                    .find(|local| local.key == key)
-                    .and_then(|local| local.local_version.as_deref())
-                    != Some(bundle.version.as_str())
+                preview_needs_update(
+                    status.bundles.iter().find(|local| local.key == key),
+                    &bundle.version,
+                )
             })
             .collect();
         if to_download.is_empty() {
@@ -1616,20 +1618,32 @@ pub(crate) fn preview_clear() -> Result<PreviewStatus, String> {
 #[tauri::command(rename_all = "camelCase")]
 pub(crate) fn outimg_reveal(path: String) -> Result<(), String> {
     let settings = load_library().settings;
-    let root = effective_outimg_dir(&settings).ok_or_else(|| "尚未设置 outimg 目录".to_string())?;
-    let candidate = PathBuf::from(&path);
-    let canonical_root = root
-        .canonicalize()
-        .map_err(|_| "outimg 目录不存在".to_string())?;
-    let canonical_file = candidate
+    let canonical_file = Path::new(&path)
         .canonicalize()
         .map_err(|_| "outimg 文件不存在".to_string())?;
-    if !canonical_file.starts_with(&canonical_root) || !canonical_file.is_file() {
+    if !canonical_file.is_file()
+        || !outimg_roots(&settings)
+            .iter()
+            .any(|root| canonical_file.starts_with(root))
+    {
         return Err("目标文件不在 outimg 目录内".into());
     }
-    std::process::Command::new("explorer")
-        .arg("/select,")
-        .arg(&canonical_file)
+    let mut explorer = std::process::Command::new("explorer");
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        let canonical_text = canonical_file.to_string_lossy();
+        let shell_path = if let Some(unc) = canonical_text.strip_prefix(r"\\?\UNC\") {
+            format!(r"\\{unc}")
+        } else {
+            canonical_text.trim_start_matches(r"\\?\").to_string()
+        };
+        // Explorer 的选择参数包含文件本身，带空格的路径需要独立的引号。
+        explorer.raw_arg(format!(r#"/select,"{shell_path}""#));
+    }
+    #[cfg(not(windows))]
+    explorer.arg("/select,").arg(&canonical_file);
+    explorer
         .spawn()
         .map_err(|e| format!("无法定位 outimg 文件：{}", e))?;
     Ok(())

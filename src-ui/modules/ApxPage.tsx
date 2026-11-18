@@ -1,6 +1,13 @@
 // APX 页面展示渠道、独立目录和文件校验，安装与导出仍走原有事务。
 import { useState } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import {
+  Archive,
+  Download,
+  Gamepad2,
+  RefreshCw,
+  ShieldCheck,
+  Tags,
+} from "lucide-react";
 import {
   useActions,
   useBackend,
@@ -132,33 +139,46 @@ export function ApxPage() {
                     : "补丁安装状态来自文件大小与 SHA-256 校验。")}
       </div>
       <div className="stats-grid apx-stats">
-        {[
+        {(
           [
-            "本地游戏版本",
-            data?.localGameVersion || "未检测",
-            data?.localVersionSource || "选择下方游戏目录",
-          ],
-          [
-            "远端适配版本",
-            data?.remoteGameVersion || "待检查",
-            `补丁版本 ${data?.remoteVersion || "未知"}`,
-          ],
-          [
-            "本地补丁状态",
-            data ? apxInstallState(data) : "待检查",
-            `本地版本 ${data?.localPluginVersion || "未安装"}`,
-          ],
-          [
-            "已安装 / 总文件数",
-            `${data?.installedFiles || 0} / ${data?.totalFiles || 0}`,
-            bytes(data?.totalBytes || 0),
-          ],
-        ].map(([title, value, detail]) => (
-          <div className="stat" key={title}>
-            <small>{title}</small>
-            <strong title={value}>{value}</strong>
-            <small>{detail}</small>
-          </div>
+            [
+              Gamepad2,
+              "本地游戏版本",
+              data?.localGameVersion || "未检测",
+              data?.localVersionSource || "选择下方游戏目录",
+            ],
+            [
+              Tags,
+              "远端适配版本",
+              data?.remoteGameVersion || "待检查",
+              `补丁版本 ${data?.remoteVersion || "未知"}`,
+            ],
+            [
+              ShieldCheck,
+              "本地补丁状态",
+              data ? apxInstallState(data) : "待检查",
+              `本地版本 ${data?.localPluginVersion || "未安装"}`,
+            ],
+            [
+              Archive,
+              "已安装 / 总文件数",
+              `${data?.installedFiles || 0} / ${data?.totalFiles || 0}`,
+              bytes(data?.totalBytes || 0),
+            ],
+          ] as const
+        ).map(([Icon, title, value, detail]) => (
+          <article className="stat" key={title}>
+            <div className="apx-stat-body">
+              <span className="apx-stat-icon" aria-hidden="true">
+                <Icon size={16} />
+              </span>
+              <div>
+                <h2>{title}</h2>
+                <strong title={value}>{value}</strong>
+              </div>
+            </div>
+            <small title={detail}>{detail}</small>
+          </article>
         ))}
       </div>
       {running.map((t) => (

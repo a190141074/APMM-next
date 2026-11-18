@@ -26,7 +26,7 @@ def no_links(path):
 
 assert TARGET.resolve() == Path('D:/MOD/APMM-next/apmm-desktop/dist/APMM-next').resolve()
 no_links(TARGET)
-report=json.loads((ROOT/'verification-portable-build.json').read_text('utf-8'))
+report=json.loads((build_report()).read_text('utf-8'))
 payload=Path(report['payload'])
 assert payload.resolve().is_relative_to(WORK.resolve())
 manifest=json.loads((payload/'release-manifest.json').read_text('utf-8'))

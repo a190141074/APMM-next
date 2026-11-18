@@ -1,3 +1,4 @@
+import { portableBuildReport } from "./work-paths.mjs";
 // 使用发行包的独立副本验证配色 WebView 与真实 IPC；不操作系统取色窗口或实际安装。
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
@@ -9,7 +10,7 @@ import { chromium } from "playwright";
 
 const root = path.resolve(import.meta.dirname, "..");
 const build = JSON.parse(
-  readFileSync(path.join(root, "verification-portable-build.json"), "utf8"),
+  readFileSync(portableBuildReport, "utf8"),
 );
 const output = path.join(
   process.env.APMM_WORK_DIR || "B:/APMM-next-work",

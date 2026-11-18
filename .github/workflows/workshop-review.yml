@@ -1,0 +1,86 @@
+name: Workshop review and publication
+on:
+  workflow_dispatch:
+    inputs:
+      submission_id:
+        description: 投稿 UUID
+        required: true
+      action:
+        description: 维护者操作
+        required: true
+        type: choice
+        options: [issue, approve, reject, publish, withdraw]
+      evidence:
+        description: 审核证据 JSON（批准和拒绝时必填）
+        required: false
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: workshop-publication
+  cancel-in-progress: false
+jobs:
+  review:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    environment: workshop-publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check maintainer and inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+          SUBMISSION_ID: ${{ inputs.submission_id }}
+          REVIEW_EVIDENCE: ${{ inputs.evidence }}
+        run: |
+          permission=$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" --jq .permission)
+          test "$permission" = admin || test "$permission" = maintain
+          python - <<'PY'
+          import json, os, pathlib, uuid
+          value=os.environ['SUBMISSION_ID']
+          assert str(uuid.UUID(value)) == value
+          raw=os.environ.get('REVIEW_EVIDENCE','')
+          if raw:
+              pathlib.Path(os.environ['RUNNER_TEMP'],'evidence.json').write_text(json.dumps(json.loads(raw)),encoding='utf-8')
+          PY
+      - name: Install locked service tools
+        run: |
+          python -m pip install -r workshop-service/requirements.lock
+          python workshop-service/tools/canonical-index.py --output "$RUNNER_TEMP/canonical-index.json"
+      - name: Review or publish
+        env:
+          ACTION: ${{ inputs.action }}
+          SUBMISSION_ID: ${{ inputs.submission_id }}
+          APMM_REVIEW_URL: ${{ vars.APMM_REVIEW_URL }}
+          APMM_REVIEW_TOKEN: ${{ secrets.APMM_REVIEW_TOKEN }}
+          APMM_PUBLISH_PRIVATE_KEY: ${{ secrets.APMM_PUBLISH_PRIVATE_KEY }}
+          CNB_TOKEN: ${{ secrets.CNB_WORKSHOP_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          case "$ACTION" in
+            issue)
+              python workshop-service/tools/review.py issue "$SUBMISSION_ID" --output "$RUNNER_TEMP/issue.md"
+              count=$(gh issue list --search "$SUBMISSION_ID in:title" --state all --json number --jq length)
+              if [ "$count" = 0 ]; then
+                gh issue create --title "工坊审核 $SUBMISSION_ID" --body-file "$RUNNER_TEMP/issue.md"
+              fi
+              ;;
+            approve|reject)
+              python workshop-service/tools/review.py "$ACTION" "$SUBMISSION_ID" --evidence "$RUNNER_TEMP/evidence.json"
+              ;;
+            publish|withdraw)
+              export GIT_CONFIG_COUNT=1
+              export GIT_CONFIG_KEY_0=http.https://cnb.cool/.extraheader
+              export GIT_CONFIG_VALUE_0="Authorization: Bearer $CNB_TOKEN"
+              git clone --depth 1 --branch main https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets.git "$RUNNER_TEMP/assets"
+              python workshop-service/tools/publish.py "$SUBMISSION_ID" --operation "$ACTION" --repo "$RUNNER_TEMP/assets" --stage "$RUNNER_TEMP/publish" --index "$RUNNER_TEMP/canonical-index.json" --push --public-base https://cnb.cool/astral-weird-egg/astral-party-mod-manager-assets/-/git/raw/main/workshop
+              ;;
+          esac

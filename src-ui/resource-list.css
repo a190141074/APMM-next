@@ -1,0 +1,281 @@
+/* 直接列表采用紧凑候选行，保留原版、应用、比较和管理的独立点击区域。 */
+.resource-view-mode {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+.resource-view-mode button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+}
+.resource-view-mode button[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.resource-scroll[data-layout="compact"] .resource-row {
+  gap: 10px;
+  padding-bottom: 10px;
+}
+.hero-compact-card {
+  border-radius: 8px;
+}
+.hero-compact-card .resource-open {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 6px 9px;
+}
+.hero-compact-card .resource-open > .hero-avatar {
+  flex: 0 0 var(--hero-thumb);
+  width: var(--hero-thumb);
+  height: var(--hero-thumb);
+  padding: 0;
+  border-radius: 6px;
+  background: var(--image-bg);
+}
+.hero-avatar .image-empty {
+  gap: 0;
+  padding: 0;
+}
+.hero-avatar .image-empty > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.hero-compact-caption {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 5px;
+}
+.hero-compact-caption > svg,
+.hero-compact-meta {
+  color: var(--muted);
+}
+.hero-compact-caption strong {
+  font-size: 12px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hero-compact-meta,
+.hero-compact-stats {
+  grid-column: 1 / -1;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.hero-compact-stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.hero-compact-stats .badge {
+  padding: 1px 4px;
+}
+.hero-compact-card .select-mark {
+  top: 5px;
+  left: 5px;
+}
+.hero-compact-card .select-mark:focus-visible {
+  opacity: 1;
+}
+.detail-page .candidate {
+  flex-basis: calc(var(--detail-thumb) + 16px);
+}
+.detail-page .candidate-apply .asset-image {
+  height: var(--detail-thumb);
+}
+.detail-page .candidate-add {
+  flex-basis: var(--detail-thumb);
+  min-height: calc(var(--detail-thumb) + 68px);
+}
+.resource-list-position {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding-right: 3px;
+}
+.resource-list-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+.resource-list-heading strong {
+  font-size: 13px;
+}
+.resource-list-heading span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+}
+.resource-list .compact-part {
+  position: relative;
+  grid-template-columns: minmax(170px, 26%) minmax(0, 1fr);
+  gap: 14px;
+  padding: 11px 14px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+.compact-part.selected {
+  background: var(--accent-light);
+  box-shadow: inset 3px 0 var(--accent);
+}
+.compact-part .part-identity {
+  position: relative;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 3px 3px 25px;
+}
+.compact-part .part-identity h3 {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.compact-part .part-identity code {
+  font-size: 10px;
+}
+.compact-part .part-identity > small {
+  font-size: 10px;
+}
+.list-select {
+  position: absolute;
+  top: 9px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--accent);
+}
+.list-select.checked {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.compact-part .candidate-strip {
+  gap: 9px;
+  align-items: stretch;
+  padding: 3px 2px 7px;
+}
+.compact-part .candidate {
+  flex-basis: var(--list-thumb);
+  border-radius: 7px;
+}
+.compact-part .candidate-apply {
+  gap: 0;
+  padding: 0;
+}
+.compact-part .candidate-apply .asset-image {
+  height: var(--list-thumb);
+  border-radius: 4px;
+}
+.compact-part .candidate-apply > strong {
+  display: none;
+}
+.compact-part .candidate:first-child .candidate-apply > strong {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2px;
+  background: color-mix(in srgb, var(--text) 55%, transparent);
+  color: var(--surface);
+  font-size: 10px;
+  text-align: center;
+  pointer-events: none;
+}
+.compact-part .candidate-apply > small {
+  display: none;
+}
+.compact-part .candidate-tools,
+.compact-part .candidate-tool {
+  bottom: 3px;
+  right: 3px;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.compact-part .candidate:hover .candidate-tools,
+.compact-part .candidate:hover .candidate-tool,
+.compact-part .candidate:focus-within .candidate-tools,
+.compact-part .candidate:focus-within .candidate-tool {
+  opacity: 1;
+}
+.compact-part .candidate-tools > button,
+.compact-part .candidate-tool {
+  padding: 2px;
+}
+.compact-part .candidate-tool.candidate-reveal {
+  top: 3px;
+  opacity: 1;
+}
+.compact-part .candidate-add,
+.compact-part .candidate-more {
+  flex: 0 0 var(--list-thumb);
+  min-height: var(--list-thumb);
+  gap: 5px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+.compact-part .candidate-add > svg {
+  width: 19px;
+  height: 19px;
+}
+.compact-part .candidate-add small {
+  display: none;
+}
+.candidate-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--muted);
+}
+.candidate-more:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.candidate-more small {
+  font-size: 9px;
+}
+.settings-content .about-page {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .resource-list .compact-part {
+    grid-template-columns: minmax(140px, 23%) minmax(0, 1fr);
+    gap: 9px;
+    padding: 9px;
+  }
+}

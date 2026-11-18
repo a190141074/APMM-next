@@ -1,0 +1,11 @@
+# 由实际域名和 TLS 配置包含此 location；不公开私有数据目录。
+location /v1/ {
+    client_max_body_size 80m;
+    client_body_timeout 120s;
+    proxy_read_timeout 130s;
+    proxy_send_timeout 130s;
+    proxy_request_buffering off;
+    proxy_pass http://127.0.0.1:18421;
+    proxy_set_header Host $host;
+    access_log off;
+}

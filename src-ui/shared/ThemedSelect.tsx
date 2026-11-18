@@ -36,6 +36,7 @@ export function ThemedSelect({
         <Select.Content
           className="select-content"
           position="popper"
+          align="start"
           sideOffset={6}
           collisionPadding={12}
         >

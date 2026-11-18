@@ -1,5 +1,7 @@
 # 架构与不变量
 
+桌面程序使用 Rust 和 Tauri 2，Windows 上由 WebView2 承载界面。前端使用 React、TypeScript、Vite、Tailwind CSS、Radix UI 和 TanStack Query，经 Tauri IPC 调用后端。pnpm 管理前端依赖，Cargo 管理 Rust 依赖，Python 用于可选资产工具、工坊维护与部分验收脚本。版本和依赖以 `package.json`、`src-tauri/Cargo.toml`、`VERSION` 及各自锁文件为准。
+
 ```text
 src-ui/app                 外壳、导航、主题与页面生命周期
 src-ui/modules             资源页、详情、导入导出、插件、设置、任务中心
@@ -36,6 +38,21 @@ tools                      构建、生成、隔离验收与产物审计
 便携软件更新仅操作 `portable_update::ALLOWED` 和发行清单共同允许的文件。下载校验后等待任务通道与库锁，助手备份、整批替换、启动新版并等待工作区确认；失败回滚。更新日志和下次启动恢复不能依赖当前页面。
 
 ## 原图与资产工具
+
+源码分类和资源目录由 `config/sections.json`、`config/resources.json` 及相关名称表维护。界面图标、内置资源和工具的源码入口见[源码导航](FILE-MAP.md)。
+
+以下位置均相对当前实例的运行数据根。开发版优先使用 `ASTRAL_DEV_DATA_DIR`，默认使用工作盘的 `dev-data/`。便携版使用当前 EXE 旁的 `data/`，MSI 版使用 `%LOCALAPPDATA%/APMM`。定位逻辑见 [storage.rs](../src-tauri/src/storage.rs)和 [installation.rs](../src-tauri/src/installation.rs)。
+
+| 路径或配置 | 用途 |
+| --- | --- |
+| `library.json` 和 `vault/<分类>/<ID>/<部位>/` | 资源和设置索引、各个 Mod 候选文件。 |
+| `modimg_path` | 配置指向实际游戏替换目录，应用时按槽位通过资源事务写入。 |
+| `assets/maps/`、`assets/outimg/` | 本地提取的分类映射与官方原图。 |
+| `previews/`、`cache/thumbnails/` | 已安装的预览包与界面缩略图缓存，分别保存。 |
+| `plugins/<平台>/`、`cache/apx/` | APX 按平台保存的状态与下载缓存。实际补丁安装位置从该渠道的游戏根解析。 |
+| `auxiliary/asset-tool/` | 可选资产提取插件的运行版本与安装状态。 |
+
+分享包由 `packages.rs` 处理 `.apmod` 加密格式及分卷，预设由 `presets.rs` 维护，兼容边界见[迁移指南](MIGRATION.md)。公开预览包的生成和验收见[发行指南](RELEASING.md)。
 
 优先使用校验有效的本地产物，其次远端预览缓存，最后显示缺图。官方原图和缩略图不共用可变文件。资产插件未安装不妨碍 Mod 管理。
 

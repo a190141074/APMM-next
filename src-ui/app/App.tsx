@@ -50,12 +50,17 @@ import { TaskPopover } from "../modules/TaskPopover";
 import { useStartup } from "../hooks/useStartup";
 import { activeTask } from "../core/domain/tasks";
 import { WelcomeDialog } from "../modules/WelcomeDialog";
+import {
+  LegacyMigrationNotice,
+  useMigrationStatus,
+} from "../modules/LegacyMigrationNotice";
 import { useAppearance } from "../hooks/useAppearance";
 import { DebugPage } from "../modules/DebugPage";
 import { usePageNavigation } from "../hooks/usePageNavigation";
 import { usePageReveal } from "../hooks/usePageReveal";
 import { useResourceDrop } from "../hooks/useResourceDrop";
 import { DropImportDialog } from "../modules/DropImportDialog";
+import { PreviewDownloadPrompt } from "../modules/PreviewDownloadPrompt";
 const groups = [
   {
     title: "工作区",
@@ -93,6 +98,7 @@ const groups = [
 ] as const;
 export function App() {
   const workspace = useWorkspace();
+  const migrationStatus = useMigrationStatus(workspace.data?.revision ?? 0);
   const tasks = useTasks();
   const { api, act, notice, setNotice } = useActions();
   const nativeWindow = useNativeWindow();
@@ -101,6 +107,8 @@ export function App() {
   );
   usePageReveal(pageRef, route);
   const [collapsed, setCollapsed] = useState(false);
+  const [settingsCategory, setSettingsCategory] = useState<string>();
+  const [resourceResetToken, setResourceResetToken] = useState(0);
   const authorMode = workspace.data?.settings.authorMode || false;
   useEffect(() => {
     if (!authorMode && target === "author") setRoute("workshop");
@@ -110,7 +118,10 @@ export function App() {
   const search = searches[route] || "";
   const setSearch = (value: string) =>
     setSearches((previous) => ({ ...previous, [route]: value }));
-  useStartup(workspace.data, setNotice);
+  const { availableVersion, dismissUpdate } = useStartup(
+    workspace.data,
+    setNotice,
+  );
   const {
     mode: theme,
     setMode: setTheme,
@@ -132,6 +143,14 @@ export function App() {
   const [welcomed, setWelcomed] = useState(
     localStorage.getItem("apmm.welcomed") === "true",
   );
+  const welcomeOpen =
+    api.native &&
+    workspace.data &&
+    migrationStatus.isSuccess &&
+    !workspace.data.migrated &&
+    migrationStatus.data.sources.length === 0 &&
+    !workspace.data.resources.some((resource) => resource.files.length > 0) &&
+    !welcomed;
   const [unknownDrop, setUnknownDrop] = useState<{
     paths: string[];
     packages: string[];
@@ -155,8 +174,12 @@ export function App() {
     return () => clearTimeout(t);
   }, [notice, setNotice]);
   const running = tasks.data?.filter(activeTask).length || 0;
-  const navigate = (next: Route) => {
+  const navigate = (next: Route, nextSettingsCategory?: string) => {
     setFocusKey(undefined);
+    setSettingsCategory(next === "settings" ? nextSettingsCategory : undefined);
+    if (next === target && next !== "overview") {
+      setResourceResetToken((value) => value + 1);
+    }
     setRoute(next);
   };
   return (
@@ -344,6 +367,12 @@ export function App() {
             </div>
           </details>
         </header>
+        {workspace.data && (
+          <LegacyMigrationNotice
+            revision={workspace.data.revision}
+            onReview={() => navigate("settings", "directories")}
+          />
+        )}
         <main className="main-content" ref={pageRef} data-route={route}>
           {workspace.isPending ? (
             <Loading />
@@ -372,7 +401,9 @@ export function App() {
                   <PresetsPage snapshot={workspace.data} />
                 ) : route === "settings" ? (
                   <SettingsPage
+                    key={`${settingsCategory || "default"}-${resourceResetToken}`}
                     snapshot={workspace.data}
+                    initialCategory={settingsCategory}
                     onPresets={() => navigate("presets")}
                   />
                 ) : route === "debug" ? (
@@ -400,6 +431,7 @@ export function App() {
                     searchMode={searchMode}
                     focusKey={focusKey}
                     onFocusClear={() => setFocusKey(undefined)}
+                    resetToken={resourceResetToken}
                     resources={workspace.data.resources}
                   />
                 )}
@@ -441,18 +473,45 @@ export function App() {
           }}
         />
       )}
+      {welcomeOpen && workspace.data && (
+        <WelcomeDialog
+          dataDir={workspace.data.dataDir}
+          onClose={() => {
+            localStorage.setItem("apmm.welcomed", "true");
+            setWelcomed(true);
+          }}
+        />
+      )}
       {api.native &&
         workspace.data &&
-        !workspace.data.migrated &&
-        !welcomed && (
-          <WelcomeDialog
-            dataDir={workspace.data.dataDir}
-            onClose={() => {
-              localStorage.setItem("apmm.welcomed", "true");
-              setWelcomed(true);
-            }}
+        migrationStatus.isSuccess &&
+        !welcomeOpen && (
+          <PreviewDownloadPrompt
+            enabled={workspace.data.settings.previewDownloadPrompt !== false}
           />
         )}
+      {availableVersion && (
+        <div className="update-reminder" role="status">
+          <Info size={16} />
+          <span>发现 APMM {availableVersion}</span>
+          <button
+            className="text-button"
+            onClick={() => {
+              navigate("settings", "updates");
+              dismissUpdate();
+            }}
+          >
+            查看更新
+          </button>
+          <button
+            className="icon-button"
+            aria-label="关闭更新提醒"
+            onClick={dismissUpdate}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
       {(notice || appearanceError) && (
         <button className="toast" onClick={() => setNotice("")}>
           {notice || appearanceError}

@@ -1,14 +1,38 @@
 //! 旧库先复制并验证，再事务提交；源目录和游戏目录不会被写入。
+#[cfg(test)]
+#[path = "migration_candidate_tests.rs"]
+mod candidate_tests;
 use crate::*;
 use serde_json::{json, Value};
 use tauri::Manager;
 
 fn walk(root: &Path) -> Result<Vec<PathBuf>, String> {
+    walk_selected(root, false)
+}
+fn walk_selected(root: &Path, omit_runtime: bool) -> Result<Vec<PathBuf>, String> {
     let mut out = Vec::new();
     let mut pending = vec![root.to_path_buf()];
     while let Some(dir) = pending.pop() {
         for entry in fs::read_dir(&dir).map_err(|e| e.to_string())? {
             let entry = entry.map_err(|e| e.to_string())?;
+            // 运行时缓存会随程序运行变化，在遍历前跳过整个子树。
+            if omit_runtime
+                && dir == root
+                && matches!(
+                    entry.file_name().to_str().unwrap_or(""),
+                    "logs"
+                        | "updates"
+                        | "staging"
+                        | "auxiliary"
+                        | "tasks"
+                        | "webview"
+                        | "cache"
+                        | "modimg-scan-cache.json"
+                        | "migration-pending.json"
+                )
+            {
+                continue;
+            }
             let path = entry.path();
             let meta = fs::symlink_metadata(&path).map_err(|e| e.to_string())?;
             let mut linked = meta.file_type().is_symlink();
@@ -34,21 +58,7 @@ fn walk(root: &Path) -> Result<Vec<PathBuf>, String> {
     Ok(out)
 }
 fn files_to_copy(root: &Path) -> Result<Vec<PathBuf>, String> {
-    Ok(walk(root)?
-        .into_iter()
-        .filter(|p| {
-            let first = p
-                .strip_prefix(root)
-                .ok()
-                .and_then(|r| r.components().next())
-                .and_then(|c| c.as_os_str().to_str())
-                .unwrap_or("");
-            !matches!(
-                first,
-                "logs" | "updates" | "staging" | "auxiliary" | "tasks" | "migration-pending.json"
-            )
-        })
-        .collect())
+    walk_selected(root, true)
 }
 #[tauri::command]
 pub fn migration_inspect(source: String) -> Result<Value, String> {
@@ -57,6 +67,12 @@ pub fn migration_inspect(source: String) -> Result<Value, String> {
         .map_err(|e| e.to_string())?;
     let raw = fs::read(root.join("library.json")).map_err(|_| "所选目录没有 library.json")?;
     let library: Library = serde_json::from_slice(&raw).map_err(|e| e.to_string())?;
+    if crate::migration_detection::same_path(&root, &data_dir()) {
+        return Ok(
+            json!({"source":root,"destination":data_dir(),"mode":"inherited",
+            "message":"所选目录就是当前正在使用的 data，已就地接续，无需复制到自身。"}),
+        );
+    }
     let files = files_to_copy(&root)?;
     let bytes = files
         .iter()
@@ -71,8 +87,19 @@ pub fn migration_inspect(source: String) -> Result<Value, String> {
         .flat_map(|s| s.resources.values())
         .map(|r| r.files.len())
         .sum::<usize>();
+    let current: Library = if data_dir().join("library.json").exists() {
+        serde_json::from_slice(
+            &fs::read(data_dir().join("library.json")).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?
+    } else {
+        Library::default()
+    };
+    let merge = crate::migration_merge::has_content(&current);
+    let new_mods = crate::migration_merge::missing_count(&library, &current);
     Ok(
-        json!({"source":root,"files":files.len(),"mods":mods,"bytes":bytes,"destination":data_dir()}),
+        json!({"source":root,"files":files.len(),"mods":mods,"newMods":new_mods,
+            "mode":if merge { "merge" } else { "copy" },"bytes":bytes,"destination":data_dir()}),
     )
 }
 fn normalized(path: &str) -> String {
@@ -143,16 +170,17 @@ fn copy_to(
     let raw = fs::read(root.join("library.json")).map_err(|e| e.to_string())?;
     serde_json::from_slice::<Library>(&raw).map_err(|e| e.to_string())?;
     if destination.join("library.json").exists() {
-        let current: Library = serde_json::from_slice(
-            &fs::read(destination.join("library.json")).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())?;
-        if !current.heroes.is_empty()
-            || !current.monsters.is_empty()
-            || !current.workshop.is_empty()
-            || !current.settings.presets.is_empty()
-        {
-            return Err("新版资源库非空，请使用包导入以保留已有资源和预设".into());
+        let current_raw = fs::read(destination.join("library.json")).map_err(|e| e.to_string())?;
+        let current: Library = serde_json::from_slice(&current_raw).map_err(|e| e.to_string())?;
+        if crate::migration_merge::has_content(&current) {
+            return crate::migration_merge::copy_to(
+                &root,
+                &destination,
+                &raw,
+                &current_raw,
+                cancel,
+                progress,
+            );
         }
     }
     let files = files_to_copy(&root)?;
@@ -221,7 +249,9 @@ fn copy_to(
                 return Err("迁移已取消".into());
             }
             let rel = path.strip_prefix(stage.join("new")).unwrap().to_path_buf();
-            journal.copy(&rel)?;
+            journal
+                .copy(&rel)
+                .map_err(|e| format!("提交迁移文件失败 {}：{e}", rel.display()))?;
         }
         if cancel.load(Ordering::Acquire) {
             return Err("迁移已取消".into());
@@ -344,9 +374,15 @@ mod tests {
         library["legacyPath"] = json!(source.join("vault/file.png").to_string_lossy());
         fs::write(source.join("library.json"), library.to_string()).unwrap();
         fs::write(source.join("image.png"), b"fixture").unwrap();
+        for cache in ["webview", "cache"] {
+            ensure_dir(&source.join(cache)).unwrap();
+            fs::write(source.join(cache).join("volatile.bin"), b"cache").unwrap();
+        }
         let before = sha256_file(&source.join("library.json")).unwrap();
         copy_to(&source, &destination, &AtomicBool::new(false), |_, _, _| {}).unwrap();
         assert_eq!(sha256_file(&source.join("library.json")).unwrap(), before);
+        assert!(!destination.join("webview").exists());
+        assert!(!destination.join("cache").exists());
         let actual: Value =
             serde_json::from_slice(&fs::read(destination.join("library.json")).unwrap()).unwrap();
         assert!(actual["legacyPath"]

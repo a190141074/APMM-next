@@ -52,6 +52,9 @@ fn settings_set_inner(patch: serde_json::Value) -> Result<Settings, String> {
         if let Some(v) = o.get("monitorDirectories").and_then(|v| v.as_bool()) {
             lib.settings.monitor_directories = v;
         }
+        if let Some(v) = o.get("previewDownloadPrompt").and_then(|v| v.as_bool()) {
+            lib.settings.preview_download_prompt = v;
+        }
         if let Some(v) = o.get("viewMode").and_then(|v| v.as_str()) {
             lib.settings.view_mode = Some(v.to_string());
         }
@@ -96,8 +99,15 @@ fn settings_set_inner(patch: serde_json::Value) -> Result<Settings, String> {
         if let Some(v) = o.get("updateAutoCheck").and_then(|v| v.as_bool()) {
             lib.settings.update_auto_check = v;
         }
-        if let Some(v) = o.get("updateIntervalHours").and_then(|v| v.as_u64()) {
-            lib.settings.update_interval_hours = crate::normalized_update_interval_hours(v as u32);
+        if let Some(v) = o.get("updateIntervalMinutes").and_then(|v| v.as_u64()) {
+            lib.settings.update_interval_minutes =
+                Some(crate::normalized_update_interval_minutes(v));
+            lib.settings.update_interval_hours = None;
+        } else if let Some(v) = o.get("updateIntervalHours").and_then(|v| v.as_u64()) {
+            let hours = u32::try_from(v).unwrap_or(0);
+            lib.settings.update_interval_minutes =
+                Some(crate::legacy_update_interval_minutes(hours));
+            lib.settings.update_interval_hours = None;
         }
         if let Some(v) = o.get("updateSkippedVersion").and_then(|v| v.as_str()) {
             let trimmed = v.trim().to_string();

@@ -169,7 +169,7 @@ if (
 const python = path.join(root, "plugins/asset-tool/.venv/Scripts/python.exe");
 const archive = spawnSync(
   python,
-  ["-X", "utf8", "-B", "tools/archive.py", payload, zip],
+  ["-X", "utf8", "-B", "tools/archive.py", payload, zip, "APMM-" + version],
   { cwd: root, env, windowsHide: true, stdio: "inherit" },
 );
 if (archive.status !== 0) throw Error("ZIP 生成失败");

@@ -10,7 +10,9 @@ Astral Party 图片 Mod 工作台，使用 Rust、Tauri 2、React、TypeScript�
 
 ## 本地启动
 
-便携版：解压 `APMM-0.4.1-windows-x86_64-portable.zip` 到可写目录，运行 `astral-mod-manager.exe`，数据保存在程序旁的 `data`。安装版：运行 `APMM-0.4.1-windows-x86_64.msi`，程序默认安装到 Program Files/APMM，数据保存在 `%LOCALAPPDATA%/APMM`。MSI 与便携副本的数据互不接管。
+首次使用可选 MSI 安装版。双击 MSI 按提示安装，程序默认装在 Program Files/APMM，数据保存在 `%LOCALAPPDATA%/APMM`。
+
+便携版无需安装。解压新版 ZIP 后，打开 `APMM-<版本>` 文件夹，双击 `astral-mod-manager.exe`。0.4.10 及以前的平铺 ZIP 请先新建一个文件夹再解压进去。便携数据保存在程序旁的 `data`。
 
 旧版 0.3.36 的自动更新使用单独的 `legacy-bridge.zip`；新版按安装身份选择 MSI 或便携包。更新机制、恢复与验收边界见 [更新指南](docs/UPDATING.md)。
 

@@ -75,7 +75,7 @@
   border: 0;
   background: transparent;
   padding: 5px 0;
-  min-width: 54px;
+  min-width: 64px;
   font-size: 12px;
 }
 .select-content {
@@ -92,6 +92,7 @@
 }
 .select-viewport {
   padding: 4px;
+  min-width: var(--radix-select-trigger-width);
 }
 .select-option {
   display: flex;

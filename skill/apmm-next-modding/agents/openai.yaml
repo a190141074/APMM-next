@@ -1,0 +1,3 @@
+interface:
+  display_name: "APMM Next 开发"
+  short_description: "维护 Rust、Tauri 2 与 React 版 APMM，保留当前界面约定和平台目录隔离"

@@ -14,6 +14,7 @@ import {
   resourceSizeStyle,
   type ResourceSize,
 } from "../core/domain/resourcePresentation";
+import { ResourceSizeControls } from "./ResourceSizeControls";
 import { Badge, Empty } from "../shared/Ui";
 import { useResourceActions } from "../hooks/useResourceActions";
 import { ResourceCandidateRow } from "./ResourceCandidateRow";
@@ -26,6 +27,9 @@ export function ResourceDetail({
   search = "",
   searchMode = "smart",
   size = "medium",
+  unified = true,
+  onSizeChange,
+  onUnifiedChange,
   onClearFilters,
 }: {
   resources: ResourceRecord[];
@@ -36,6 +40,9 @@ export function ResourceDetail({
   search?: string;
   searchMode?: SearchMode;
   size?: ResourceSize;
+  unified?: boolean;
+  onSizeChange?: (size: ResourceSize) => void;
+  onUnifiedChange?: (unified: boolean) => void;
   onClearFilters?: () => void;
 }) {
   const [byPart, setByPart] = useState(false);
@@ -74,6 +81,14 @@ export function ResourceDetail({
           <strong>{first.entityName}</strong>
         </span>
         <div className="spacer" />
+        {onSizeChange && onUnifiedChange && (
+          <ResourceSizeControls
+            size={size}
+            unified={unified}
+            onSizeChange={onSizeChange}
+            onUnifiedChange={onUnifiedChange}
+          />
+        )}
         <div className="segments">
           <button
             className={!byPart ? "active" : ""}

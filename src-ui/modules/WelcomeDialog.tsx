@@ -24,29 +24,44 @@ export function WelcomeDialog({
       <div className="wizard-body">
         <p>可以接续旧版资源库，也可以从空白工作区开始。</p>
         <p className="resource-code">新版数据位置：{dataDir}</p>
-        {preview ? (
+        {preview?.mode === "inherited" ? (
+          <p>{preview.message}</p>
+        ) : preview ? (
           <>
             <p>
-              找到 {preview.mods} 个 Mod，共 {preview.files} 个文件，约{" "}
-              {bytes(preview.bytes)}。
+              找到 {preview.mods} 个候选（含未应用项）。
+              {preview.mode === "merge" ? (
+                <>本次补齐 {preview.newMods} 个缺失候选。</>
+              ) : (
+                <>
+                  共 {preview.files} 个文件，约 {bytes(preview.bytes)}。
+                </>
+              )}
             </p>
             <p className="resource-code">来源：{preview.source}</p>
             <p>
-              复制并校验成功后启用。游戏目录需要单独核验，迁移不会自动应用 Mod。
+              {preview.mode === "merge"
+                ? "保留新版当前应用项、设置和预设，只补齐候选。"
+                : "复制并校验成功后启用。"}
+              迁移不会自动应用 Mod。
             </p>
             <button
               className="button primary"
               disabled={busy}
               onClick={() =>
                 void act(async () => {
-                  await api.task("migration", "复制旧资源库", {
-                    source: preview.source,
-                  });
+                  await api.task(
+                    "migration",
+                    preview.mode === "merge" ? "补齐旧库候选" : "复制旧资源库",
+                    {
+                      source: preview.source,
+                    },
+                  );
                   onClose();
                 }, "迁移任务已提交")
               }
             >
-              确认复制
+              {preview.mode === "merge" ? "补齐缺失候选" : "确认复制"}
             </button>
           </>
         ) : (

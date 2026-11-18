@@ -81,7 +81,10 @@ export default function AboutPage({
           <div className="credit-row">
             <div>
               <strong>NapCatQQ-Desktop</strong>
-              <small>页面交互及 APX 状态卡布局参考 · GPL-3.0</small>
+              <small>
+                页面交互、紧凑字段与 APX
+                状态卡布局、检查后直接安装的更新流程参考 · GPL-3.0
+              </small>
             </div>
             {link("主页", "https://github.com/NapNeko/NapCatQQ-Desktop")}
             {link(
@@ -92,7 +95,7 @@ export default function AboutPage({
           <div className="credit-row">
             <div>
               <strong>旧版 Astral Party Mod Manager</strong>
-              <small>角色紧凑卡、原图定位及模组输出行为参考</small>
+              <small>角色紧凑卡、原图定位、预览下载提醒及模组输出行为参考</small>
             </div>
             {link(
               "发布与资源",

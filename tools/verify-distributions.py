@@ -26,19 +26,22 @@ for artifact in report["artifacts"]:
         with zipfile.ZipFile(path) as archive:
             names = archive.namelist()
             assert len(names) == len({n.lower() for n in names})
-            manifest = json.loads(archive.read("release-manifest.json"))
+            prefix = f"APMM-{version}/" if artifact["kind"] == "portable" else ""
+            manifest = json.loads(archive.read(prefix + "release-manifest.json"))
             assert manifest["version"] == version and manifest["dataSchema"] == 1
-            assert set(names) == {f["path"] for f in manifest["files"]} | {"release-manifest.json"}
+            relative_names = {name.removeprefix(prefix) for name in names}
+            assert all(not prefix or name.startswith(prefix) for name in names)
+            assert set(relative_names) == {f["path"] for f in manifest["files"]} | {"release-manifest.json"}
             for item in manifest["files"]:
                 assert ".." not in Path(item["path"]).parts
-                data = archive.read(item["path"])
+                data = archive.read(prefix + item["path"])
                 assert len(data) == item["bytes"] and digest(data) == item["sha256"], item["path"]
-            assert not any(n.split("/")[0].lower() in {"data", "vault", "previews", "credentials"} for n in names)
+            assert not any(n.split("/")[0].lower() in {"data", "vault", "previews", "credentials"} for n in relative_names)
             if artifact["kind"] in {"legacy-bridge", "compat-0.3.39"}:
                 assert set(names) == (legacy_allowed if artifact["kind"] == "legacy-bridge" else legacy_allowed - {"astral-updater-next.exe"})
                 assert (ROOT / "NOTICE.md").read_bytes() in archive.read("THIRD_PARTY_NOTICES.md")
             else:
-                assert json.loads(archive.read("installation.json"))["kind"] == "portable"
+                assert json.loads(archive.read(prefix + "installation.json"))["kind"] == "portable"
             checks.append({**artifact, "filesVerified": len(manifest["files"])})
     else:
         checks.append(artifact)

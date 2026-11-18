@@ -1,6 +1,6 @@
 [package]
 name = "astral-mod-manager"
-version = "0.4.10"
+version = "0.4.11"
 license = "GPL-3.0-only"
 description = "Astral Party 贴图管理与切换工具"
 edition = "2021"

@@ -12,7 +12,7 @@ export function OverviewVersions({
 }: {
   version: string;
   platform: string;
-  navigate: (route: Route) => void;
+  navigate: (route: Route, settingsCategory?: string) => void;
 }) {
   const q = useQuery({
     queryKey: [IPC.plugin_status, { platform }],
@@ -40,7 +40,7 @@ export function OverviewVersions({
       <button
         className="overview-version-card"
         aria-label={`APMM 当前版本 ${version}，打开软件设置`}
-        onClick={() => navigate("settings")}
+        onClick={() => navigate("settings", "updates")}
       >
         <img src="/logo.svg" alt="" />
         <div>

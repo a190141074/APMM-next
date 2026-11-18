@@ -1,12 +1,16 @@
 import { IPC } from "../core/ipc/commands";
-// 工作区成功读取后确认更新启动；自动检查按旧版间隔运行，页面切换不重建计时器。
-import { useEffect, useRef } from "react";
+// 工作区成功读取后确认更新启动；分钟计时器按剩余时间调度，卸载时取消。
+import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { appService } from "../core/services/app";
 import type { WorkspaceSnapshot } from "../core/ipc/generated/WorkspaceSnapshot";
+import { updateCheckDelay } from "../core/domain/updateSchedule";
 export function useStartup(
   snapshot: WorkspaceSnapshot | undefined,
   notify: (v: string) => void,
 ) {
+  const client = useQueryClient();
+  const [availableVersion, setAvailableVersion] = useState<string | null>(null);
   const latest = useRef(snapshot);
   latest.current = snapshot;
   useEffect(() => {
@@ -15,10 +19,10 @@ export function useStartup(
   }, []);
   const ready = !!snapshot;
   const startupResult = useRef<Promise<any>>();
+  const lastAttempt = useRef(0);
   useEffect(() => {
     if (!ready || !appService.native) return;
     let disposed = false;
-    let lastAttempt = 0;
     startupResult.current ??= appService.command(IPC.update_startup_status);
     void startupResult.current
       .then((result) => {
@@ -27,35 +31,69 @@ export function useStartup(
       .catch((e) => {
         if (!disposed) notify(`更新恢复记录：${String(e)}`);
       });
+    return () => {
+      disposed = true;
+    };
+  }, [ready, notify]);
+  useEffect(() => {
+    if (!ready || !appService.native) return;
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const check = async () => {
-      const s = latest.current?.settings;
       const now = Date.now() / 1000;
-      if (
-        !s?.updateAutoCheck ||
-        now - Math.max(s.updateLastCheckedAt || 0, lastAttempt) <
-          (s.updateIntervalHours || 24) * 3600
-      )
+      const delay = updateCheckDelay(
+        latest.current?.settings,
+        lastAttempt.current,
+        now,
+      );
+      if (disposed || delay === null) return;
+      if (delay > 0) {
+        timer = setTimeout(() => void check(), delay);
         return;
-      lastAttempt = now;
+      }
+      lastAttempt.current = now;
       try {
         const result = await appService.command(IPC.update_check);
-        if (
-          !disposed &&
-          result.available &&
-          result.latestVersion !== s.updateSkippedVersion
-        )
-          notify(
-            `发现 APMM ${result.latestVersion}，可在设置中查看更新说明并下载。`,
+        if (!disposed) client.setQueryData([IPC.update_check, {}], result);
+        if (!disposed)
+          setAvailableVersion(
+            result.available &&
+              result.latestVersion !==
+                latest.current?.settings.updateSkippedVersion
+              ? result.latestVersion
+              : null,
           );
       } catch {
         /* 自动检查失败不打断用户操作，手动检查仍显示具体错误。 */
       }
+      if (!disposed) {
+        const remaining = updateCheckDelay(
+          latest.current?.settings,
+          lastAttempt.current,
+          Date.now() / 1000,
+        );
+        if (remaining !== null)
+          timer = setTimeout(() => void check(), remaining);
+      }
     };
     void check();
-    const timer = setInterval(() => void check(), 15 * 60 * 1000);
     return () => {
       disposed = true;
-      clearInterval(timer);
+      clearTimeout(timer);
     };
-  }, [ready, notify]);
+  }, [
+    ready,
+    client,
+    snapshot?.settings.updateAutoCheck,
+    snapshot?.settings.updateIntervalMinutes,
+  ]);
+  const settings = snapshot?.settings;
+  return {
+    availableVersion:
+      settings?.updateAutoCheck !== false &&
+      settings?.updateSkippedVersion !== availableVersion
+        ? availableVersion
+        : null,
+    dismissUpdate: () => setAvailableVersion(null),
+  };
 }

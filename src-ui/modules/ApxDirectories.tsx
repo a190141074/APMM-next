@@ -40,7 +40,7 @@ export function ApxDirectories({
   };
   return (
     <>
-      <details className="settings-card" open>
+      <details className="settings-card apx-directories" open>
         <summary>目录设置与定位 · {platformLabel}</summary>
         <p className="muted">
           各平台单独保存目录。此处修改仅用于 {platformLabel} 的补丁。

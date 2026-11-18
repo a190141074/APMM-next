@@ -1,10 +1,23 @@
 # 开发与验证
 
+## 工作流文档与 skill 同步
+
+项目 `skill/` 集中管理工作流 Markdown、skill 入口与补充材料，索引见 [skill/INDEX.md](skill/INDEX.md)。详细工程说明继续维护在本文件和 `docs/`，由 skill 引用，避免重复正文。`skill/apmm-next-modding/` 是权威维护副本；Codex 用户级同名目录只作安装副本。
+
+新会话先读应用 `AGENTS.md`、项目维护版 `SKILL.md` 和本指南，再按任务读取对应文档及本地报告。维护工作流后，从应用根执行：
+
+```powershell
+pwsh -File tools/sync-apmm-skill.ps1
+pwsh -File tools/sync-apmm-skill.ps1 -Check
+```
+
+校验必须确认来源文件的 SHA-256 一致。安装目标额外文件只报告，不自动删除；先核对是否需要迁回维护源。项目和安装副本有差异时先检查实际变更，不盲目采用较新的文件时间。敏感操作的授权只来自当前对话明确覆盖的范围，旧报告和 skill 不授予远端写入权限。
+
 ## 路径和版本
 
 新工程位于 `D:\MOD\APMM-next\apmm-desktop`。旧工程、参考工程、demo 不作为构建输出或测试暂存目录。
 
-`VERSION` 为版本真源；每轮独立功能或修复交付默认递增 PATCH，同步 `package.json`、`src-tauri/Cargo.toml`、`src-tauri/Cargo.lock` 中主程序条目、`src-tauri/tauri.conf.json`，并更新 `CHANGELOG.md` 当前版本章节。同一轮连续修改或重复构建不重复递增；仅文档或 skill 整理不自动升版。当前源码版本为 `0.4.10`（未发布）。资产插件独立版本 `0.1.0`，签名清单声明管理器范围与协议版本。
+`VERSION` 为版本真源。每轮独立应用功能或修复交付默认递增 PATCH，同步 `package.json`、`src-tauri/Cargo.toml`、`src-tauri/Cargo.lock` 中主程序条目、`src-tauri/tauri.conf.json`，并更新 `CHANGELOG.md` 当前版本章节。同一轮连续修改或重复构建沿用目标版本。文档、skill 和本地发行工具整理沿用现有版本。发行状态分渠道回读。资产插件独立版本和管理器兼容范围由插件签名清单声明。
 
 禁止把工作目录、依赖缓存或浏览器资料默认塞入 C 盘。本机工作目录为 `B:\APMM-next-work`，Cargo 复用 `src-tauri/target-msvc`，工具链/registry 位于 B 盘。不要新建重复 Cargo target，也不要清理旧工程或共用缓存。
 
@@ -25,6 +38,12 @@ pnpm.cmd tauri:dev
 ```
 
 `tauri:dev` 调用 Tauri CLI，关闭默认的 custom-protocol feature，使用 Vite。正式构建启用该 feature，嵌入构建后的前端。便携构建把前端放入 B 盘唯一目录；Windows 跨盘路径必须转为扩展路径，避免被 Tauri 识别为 URL。脚本检查 `.d` 中确实包含 `index.html` 且不含预览源目录。
+
+## Codex 预览
+
+用户明确要求预览或批注时，从应用目录启动或复用 Vite。先核对端口占用者、进程参数与应用页面。若默认回环端口 1420 已被其他进程占用，从本仓用 `pnpm.cmd dev --port <空闲端口>` 启动新实例。将启动日志和可配置的浏览器测试资料放到 B 盘任务目录。
+
+在 Codex 内置浏览器打开回环 URL，定位目标页面，确认页面和所需数据已加载。用 `APMM_UI_URL` 将同一 URL 交给相关 UI 验收脚本。记录页面、URL、数据来源、启动命令、进程与可批注状态，交付时给出准确 URL 和页面定位。热更新或切页后重新核对当前页面，保留服务供用户批注。用户要求结束时只关闭本任务启动的实例；不要关闭其他任务的共用服务。浏览器开发传输和页面夹具提供界面证据。原生 WebView、IPC、系统文件对话框和游戏目录操作有独立验收步骤。
 
 ## Linux
 
@@ -89,7 +108,7 @@ Python 依赖声明由其固定虚拟环境执行 `workshop-service/tools/third-
 
 PR 描述写清触发条件、行为变化、对应证据和未验证环境。验收分别列源码/测试、编译、实际包、运行日志、游戏行为。无真实拖放或游戏证据时不要宣称通过。
 
-公开源码目标为 GitHub `a190141074/APMM-next` 与 CNB `astral-weird-egg/APMM-next`，两端同步同一提交与版本标签。覆盖旧安装、向游戏部署和远端发布遵循本次用户授权；发行包审计后才允许发布，签名私钥和令牌永不进入源码或 ZIP。
+“推送”将同一源码提交同步到 GitHub `a190141074/APMM-next` 与 CNB `astral-weird-egg/APMM-next` 的 `main`。发行标签、附件与清单遵循 [发行规范](docs/RELEASING.md)。远端写入、覆盖旧安装和向游戏部署按本次具体范围取得授权。签名私钥和令牌永不进入源码或 ZIP。
 
 源码提交保留构建必需的资源、锁文件、第三方源码及许可和固定运行库；依赖安装目录、构建输出、临时报告、Tauri 生成的 schema 与 Cargo 缓存标记由 `.gitignore` 排除。发布前运行 `node tools/audit-source.mjs`，并核对待提交文件清单。新增忽略规则后，已经跟踪的文件仍需逐项取消跟踪；只移除 Git 索引记录，保留本机文件。
 
@@ -99,4 +118,10 @@ PR 描述写清触发条件、行为变化、对应证据和未验证环境。�
 
 所有原生验收用 `APMM_BUILD_REPORT` 指定本轮便携构建；发行派生与 MSI 验收用 `APMM_DISTRIBUTIONS_REPORT` 指定本轮报告。详细流程见 [发行与预览资源](docs/RELEASING.md)。原图预览由 `tools/build-preview-bundles.py` 构建，真实安装协议用 Rust 的 `preview_release_artifacts` 过滤验证；发行 WebView 用 `tools/verify-preview-native.mjs` 配合独立桌面启动器验收。
 
-公开 docs 只维护稳定指南与展示截图。历史过程材料归档到本地工作盘，生成器不得再次写入 docs；源码清单由 `tools/source-inventory.py` 输出到本地报告目录。
+公开 docs 维护稳定指南与展示截图。源码清单由 `tools/source-inventory.py` 输出到工作盘报告目录。
+
+## 任务报告
+
+每个独立任务使用本仓 `reports/<全局四位起递增编号>/YYYYMMDD-HHmmss-任务简称.md`。日期和阶段时间用北京时间（UTC+08:00）。分配编号时取现有编号的最大值加一，从空目录独占创建，遇到并发占用就重取编号。结项、部分交付或遇到明确阻塞时更新报告。续做根据用户给出的编号、任务主题或变更入口找原报告，在原文件追加阶段时间和结果。
+
+报告写明目标、状态、关键取舍、改动文件与职责、实测命令和结果、包与报告路径、提交或远端状态、未验证项和下一步的接续入口。完成时在答复中链接该报告。Git 忽略整个 `reports/`，机器构建 JSON、日志和发行包保持在 B 盘。报告只引用可脱敏的证据路径。

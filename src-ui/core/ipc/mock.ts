@@ -22,8 +22,10 @@ export const demo: WorkspaceSnapshot = {
     updateLastCheckedAt: null,
     pluginPlatform: "CN_STEAM",
     presets: [],
+    previewDownloadPrompt:
+      localStorage.getItem("apmm.demo-preview-download-prompt") !== "false",
     updateAutoCheck: true,
-    updateIntervalHours: 24,
+    updateIntervalMinutes: 60,
   },
   migrated: true,
 };
@@ -59,6 +61,12 @@ export async function mockCall<T>(
         String(args.patch.authorMode),
       );
     Object.assign(demo.settings, args.patch);
+    demo.revision += 1;
+    if ("previewDownloadPrompt" in args.patch)
+      localStorage.setItem(
+        "apmm.demo-preview-download-prompt",
+        String(args.patch.previewDownloadPrompt),
+      );
     if (args.patch.appearance)
       localStorage.setItem(
         "apmm.demo-appearance",

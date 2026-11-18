@@ -307,6 +307,9 @@ pub(crate) struct Settings {
     pub(crate) presets: Vec<GlobalPreset>,
     #[serde(default = "default_true")]
     pub(crate) monitor_directories: bool,
+    /// 启动时发现缺少预览缓存后询问是否下载。
+    #[serde(default = "default_true")]
+    pub(crate) preview_download_prompt: bool,
     #[serde(default = "default_true")]
     pub(crate) package_apply_settings: bool,
     /// 插件库使用的客户端：CN_STEAM / CN_TAPTAP / CN_BILIBILI / CN_WEGAME
@@ -324,9 +327,12 @@ pub(crate) struct Settings {
     /// 启动时 / 定时自动检查软件更新（默认开启）。
     #[serde(default = "default_true")]
     pub(crate) update_auto_check: bool,
-    /// 自动检查间隔（小时，1–720，默认 24）。
-    #[serde(default = "default_update_interval_hours")]
-    pub(crate) update_interval_hours: u32,
+    /// 自动检查间隔以分钟保存；缺省时兼容读取旧版小时值。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) update_interval_minutes: Option<u32>,
+    /// 旧版字段只作兼容，新设置写入分钟后清除此值。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) update_interval_hours: Option<u32>,
     /// 用户选择「跳过该版本」时记录的版本号。
     #[serde(default)]
     pub(crate) update_skipped_version: Option<String>,
@@ -335,16 +341,37 @@ pub(crate) struct Settings {
     pub(crate) update_last_checked_at: Option<u64>,
 }
 
-pub(crate) fn default_update_interval_hours() -> u32 {
-    24
+#[cfg(test)]
+#[path = "update_interval_tests.rs"]
+mod update_interval_tests;
+
+/// 分钟间隔沿用旧版最长三十天范围，非法输入回落到六十分钟。
+pub(crate) fn normalized_update_interval_minutes(raw: u64) -> u32 {
+    if raw == 0 || raw > 43_200 {
+        60
+    } else {
+        raw as u32
+    }
 }
 
-/// 归一化更新检查间隔：非法值或越界值回落到 24 小时。
-pub fn normalized_update_interval_hours(raw: u32) -> u32 {
-    if raw == 0 || raw > 720 {
-        24
+impl Settings {
+    /// 新分钟字段优先；旧小时值保持原有实际时长，不直接重新解释单位。
+    pub(crate) fn update_interval_minutes(&self) -> u32 {
+        self.update_interval_minutes
+            .map(|v| normalized_update_interval_minutes(v.into()))
+            .or_else(|| {
+                self.update_interval_hours
+                    .map(legacy_update_interval_minutes)
+            })
+            .unwrap_or(60)
+    }
+}
+
+pub(crate) fn legacy_update_interval_minutes(hours: u32) -> u32 {
+    if hours == 0 || hours > 720 {
+        1_440
     } else {
-        raw
+        hours * 60
     }
 }
 
@@ -356,6 +383,21 @@ impl Default for Settings {
 
 pub(crate) fn default_true() -> bool {
     true
+}
+
+#[cfg(test)]
+mod preview_download_prompt_tests {
+    use super::Settings;
+
+    #[test]
+    fn old_settings_default_to_prompt_and_allow_disabling_it() {
+        let old: Settings = serde_json::from_str("{}").expect("旧设置可读取");
+        assert!(old.preview_download_prompt);
+
+        let disabled: Settings =
+            serde_json::from_str(r#"{"previewDownloadPrompt":false}"#).expect("新设置可读取");
+        assert!(!disabled.preview_download_prompt);
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

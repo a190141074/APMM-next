@@ -4,7 +4,7 @@ import { ResourceGroupCard } from "./ResourceGroupCard";
 import {
   resourceSizes,
   resourceSizeStyle,
-  resourceSizeOptions,
+  readResourceSize,
   type ResourceSize,
 } from "../core/domain/resourcePresentation";
 import { useResourceLayout } from "../hooks/useResourceLayout";
@@ -32,6 +32,7 @@ import {
 } from "../core/domain/resources";
 import { useActions } from "../hooks/useApp";
 import { Empty } from "../shared/Ui";
+import { ResourceSizeControls } from "./ResourceSizeControls";
 import { ThemedSelect } from "../shared/ThemedSelect";
 const memory = new Map<
   string,
@@ -51,6 +52,7 @@ export function ResourcePage({
   onSearchClear,
   focusKey,
   onFocusClear,
+  resetToken,
 }: {
   route: Route;
   search: string;
@@ -59,11 +61,17 @@ export function ResourcePage({
   onSearchClear?: () => void;
   focusKey?: string;
   onFocusClear?: () => void;
+  resetToken?: number;
 }) {
   const initial = memory.get(route);
   const [filter, setFilter] = useState<Filter>(initial?.filter || "all");
   const [section, setSection] = useState(initial?.section || "");
-  const [size, setSize] = useState<ResourceSize>(initial?.size || "medium");
+  const [unified, setUnified] = useState(
+    () => localStorage.getItem("apmm.resource-size-unified") !== "false",
+  );
+  const [size, setSize] = useState<ResourceSize>(() =>
+    readResourceSize(localStorage, route),
+  );
   const [selected, setSelected] = useState<Set<string>>(
     new Set(initial?.selected),
   );
@@ -151,12 +159,34 @@ export function ResourcePage({
     const row = resources.find((r) => r.key === focusKey);
     if (row) setDetail(resourceGroupKey(row));
   }, [focusKey]);
+  // 侧栏重复点击当前资源分类时，仅刷新列表层，不保留上一次打开的详情。
+  const previousReset = useRef(resetToken);
+  useEffect(() => {
+    if (resetToken === previousReset.current) return;
+    previousReset.current = resetToken;
+    setDetail(null);
+    scroll.current?.scrollTo({ top: 0 });
+    onFocusClear?.();
+  }, [resetToken]);
   const toggle = (key: string) =>
     setSelected((s) => {
       const next = new Set(s);
       next.has(key) ? next.delete(key) : next.add(key);
       return next;
     });
+  const changeSize = (next: ResourceSize) => {
+    setSize(next);
+    localStorage.setItem(
+      unified ? "apmm.resource-size-global" : "apmm.resource-size." + route,
+      next,
+    );
+  };
+  const changeUnified = (next: boolean) => {
+    setUnified(next);
+    localStorage.setItem("apmm.resource-size-unified", String(next));
+    if (next) localStorage.setItem("apmm.resource-size-global", size);
+    else setSize(readResourceSize(localStorage, route));
+  };
   const selectedRows = groups
     .filter((g) => selected.has(g.key))
     .flatMap((g) => g.resources);
@@ -224,11 +254,11 @@ export function ResourcePage({
               <LayoutGrid size={16} />
             </button>
           </div>
-          <ThemedSelect
-            value={size}
-            onValueChange={(value) => setSize(value as ResourceSize)}
-            label="预览尺寸"
-            options={resourceSizeOptions}
+          <ResourceSizeControls
+            size={size}
+            unified={unified}
+            onSizeChange={changeSize}
+            onUnifiedChange={changeUnified}
           />
           <button
             className="icon-button"
@@ -370,6 +400,9 @@ export function ResourcePage({
           search={search}
           searchMode={searchMode}
           size={size}
+          unified={unified}
+          onSizeChange={changeSize}
+          onUnifiedChange={changeUnified}
           onClearFilters={() => {
             setFilter("all");
             setSection("");

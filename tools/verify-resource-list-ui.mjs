@@ -459,7 +459,7 @@ try {
       .locator(".detail-page .candidate-apply .asset-image")
       .first()
       .evaluate((el) => el.getBoundingClientRect().height),
-    208,
+    142,
   );
   await page.getByRole("button", { name: "返回列表", exact: true }).click();
   checks.push(

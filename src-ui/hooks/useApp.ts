@@ -89,6 +89,7 @@ export function useTasks() {
             IPC.plugin_status,
             IPC.workshop_list,
             IPC.update_download_status,
+            IPC.migration_status,
           ])
             void client.invalidateQueries({ queryKey: [key] });
         }
@@ -160,5 +161,20 @@ export function useBackend<T = any>(
     queryKey: [name, args],
     queryFn: () => appService.command(name, args),
     retry: false,
+  });
+}
+type PreviewCacheStatus = {
+  expectedFiles: number;
+  missingFiles: number;
+  bundles: Array<{ localVersion?: string | null }>;
+  message?: string;
+  error?: string;
+};
+export function usePreviewStatus(enabled = appService.native) {
+  return useQuery<PreviewCacheStatus>({
+    queryKey: [IPC.preview_status, {}],
+    queryFn: () => appService.command(IPC.preview_status),
+    enabled,
+    staleTime: Infinity,
   });
 }

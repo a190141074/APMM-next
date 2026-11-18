@@ -80,7 +80,11 @@ mod tests {
     }
     #[test]
     fn nested_and_legacy_flat_packages_keep_manifest_paths() {
-        for (prefix, license) in [("APMM/", "licenses/LICENSE.txt"), ("", "LICENSE.txt")] {
+        for (prefix, license) in [
+            ("APMM-0.3.40/", "licenses/LICENSE.txt"),
+            ("APMM/", "licenses/LICENSE.txt"),
+            ("", "LICENSE.txt"),
+        ] {
             let root = crate::staging::create("unpack-test").unwrap();
             let archive = package(&root, prefix, license); let output = root.join("output");
             let manifest = unpack(&archive, &output, "0.3.40").unwrap();

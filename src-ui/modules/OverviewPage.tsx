@@ -14,7 +14,7 @@ export function OverviewPage({
   snapshot: WorkspaceSnapshot;
   running: number;
   native: boolean;
-  navigate: (route: Route) => void;
+  navigate: (route: Route, settingsCategory?: string) => void;
 }) {
   return (
     <>

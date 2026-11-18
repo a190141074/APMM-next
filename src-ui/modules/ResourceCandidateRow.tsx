@@ -1,4 +1,4 @@
-// 原版、候选、比较和管理按钮共用同一行组件，紧凑模式仅改变展示数量和尺寸。
+// 原版、候选、比较和管理按钮共用同一布局，列表模式仅控制标题、选择和候选数量。
 import {
   Plus,
   Check,
@@ -102,6 +102,7 @@ export function ResourceCandidateRow({
           <button
             className="candidate-apply"
             aria-label={`还原 ${r.canonical}`}
+            title={`原版 · ${!r.activeHash || r.disabled ? "当前应用" : "点击还原"}`}
             disabled={r.category === "temporary"}
             onClick={() => void apply([r], null)}
           >
@@ -130,21 +131,6 @@ export function ResourceCandidateRow({
           >
             <Maximize2 size={14} />
           </button>
-          {outimgPath && (
-            <button
-              type="button"
-              className="candidate-tool candidate-reveal"
-              aria-label={"定位原图文件 " + r.canonical}
-              title="在文件资源管理器中定位原图"
-              onClick={() =>
-                void act(() =>
-                  api.command(IPC.outimg_reveal, { path: outimgPath }),
-                )
-              }
-            >
-              <FolderOpen size={14} />
-            </button>
-          )}
         </div>
         {r.files.slice(0, compact ? 3 : undefined).map((f) => (
           <div
@@ -212,6 +198,22 @@ export function ResourceCandidateRow({
           </button>
         )}
       </div>
+      {outimgPath && (
+        <button
+          type="button"
+          className="candidate-reveal"
+          aria-label={"定位原图文件 " + r.canonical}
+          title="在文件资源管理器中定位原图"
+          onClick={() =>
+            void act(() =>
+              api.command(IPC.outimg_reveal, { path: outimgPath }),
+            )
+          }
+        >
+          <FolderOpen size={16} />
+          <span>定位</span>
+        </button>
+      )}
     </article>
   );
 }

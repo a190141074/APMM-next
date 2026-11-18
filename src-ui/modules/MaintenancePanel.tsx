@@ -1,7 +1,7 @@
 // 维护入口只读取诊断状态；还原预设必须经过用户确认，并复用后端事务。
 import { useState } from "react";
 import { IPC } from "../core/ipc/commands";
-import { useActions, useBackend, useTasks } from "../hooks/useApp";
+import { useActions, usePreviewStatus, useTasks } from "../hooks/useApp";
 import type { WorkspaceSnapshot } from "../core/ipc/generated/WorkspaceSnapshot";
 import { Modal, Badge } from "../shared/Ui";
 export function MaintenancePanel({
@@ -10,7 +10,7 @@ export function MaintenancePanel({
   snapshot: WorkspaceSnapshot;
 }) {
   const { api, act, busy, notice } = useActions();
-  const preview = useBackend(IPC.preview_status);
+  const preview = usePreviewStatus();
   const tasks = useTasks();
   const [nonPng, setNonPng] = useState<any>(null);
   const [restore, setRestore] = useState(false);

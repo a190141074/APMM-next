@@ -47,6 +47,7 @@ export const IPC = {
   "logs_reveal": "logs_reveal",
   "logs_status": "logs_status",
   "migration_inspect": "migration_inspect",
+  "migration_status": "migration_status",
   "mod_set_disabled": "mod_set_disabled",
   "monsters_detail": "monsters_detail",
   "non_png_mods_check": "non_png_mods_check",

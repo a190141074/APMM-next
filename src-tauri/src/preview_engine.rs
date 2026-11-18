@@ -346,12 +346,12 @@ pub(crate) fn expected_preview_files_for_bundle(key: &str) -> Vec<String> {
 pub(crate) fn preview_cache_status() -> PreviewStatus {
     let expected = expected_preview_files();
     let root = preview_cache_dir();
-    let mut cached = 0usize;
+    let mut cached_paths = std::collections::HashSet::new();
     let mut bytes = 0u64;
     for file in &expected {
         if let Ok(meta) = fs::metadata(root.join(file)) {
             if meta.is_file() {
-                cached += 1;
+                cached_paths.insert(file.as_str());
                 bytes += meta.len();
             }
         }
@@ -362,7 +362,7 @@ pub(crate) fn preview_cache_status() -> PreviewStatus {
             let expected = expected_preview_files_for_bundle(key);
             let cached_files = expected
                 .iter()
-                .filter(|file| root.join(file).is_file())
+                .filter(|file| cached_paths.contains(file.as_str()))
                 .count();
             let local_version = fs::read_to_string(preview_cache_state_path(key))
                 .ok()
@@ -386,6 +386,7 @@ pub(crate) fn preview_cache_status() -> PreviewStatus {
         })
         .collect();
     let local_version = bundles.iter().filter_map(|b| b.local_version.clone()).max();
+    let cached = cached_paths.len();
     PreviewStatus {
         local_version,
         cached_files: cached,

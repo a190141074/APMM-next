@@ -48,6 +48,8 @@ mod library;
 mod logs;
 mod management_types;
 mod migration_journal;
+mod migration_merge;
+mod migration_detection;
 mod msi_update;
 mod original_cache;
 mod package;
@@ -133,6 +135,7 @@ pub fn run() {
         updates::update_startup_status,
         updates::update_download_status,
         migration::migration_inspect,
+        migration_detection::migration_status,
         task_dispatch::task_execute,
         workspace::workspace_snapshot,
         workspace::resources_apply,

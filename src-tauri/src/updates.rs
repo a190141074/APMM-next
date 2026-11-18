@@ -203,7 +203,7 @@ pub(crate) async fn update_check(
         "publishedAt": manifest.published_at,
         "assets": manifest.assets,
         "autoCheck": settings.update_auto_check,
-        "intervalHours": normalized_update_interval_hours(settings.update_interval_hours),
+        "intervalMinutes": settings.update_interval_minutes(),
         "skippedVersion": settings.update_skipped_version,
         "lastCheckedAt": settings.update_last_checked_at,
     }))

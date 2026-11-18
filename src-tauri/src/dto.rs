@@ -95,8 +95,9 @@ pub struct WorkspaceSettings {
     pub presets: Vec<PresetSummary>,
     #[ts(optional)]
     pub monitor_directories: Option<bool>,
+    pub preview_download_prompt: bool,
     pub update_auto_check: bool,
-    pub update_interval_hours: u32,
+    pub update_interval_minutes: u32,
     pub update_skipped_version: Option<String>,
     pub update_last_checked_at: Option<f64>,
 }
@@ -104,9 +105,13 @@ impl From<&crate::storage::Settings> for WorkspaceSettings {
     fn from(s: &crate::storage::Settings) -> Self {
         Self {
             author_mode: s.author_mode,
-            appearance: s.appearance.clone().filter(|value| value.validate().is_ok()),
+            appearance: s
+                .appearance
+                .clone()
+                .filter(|value| value.validate().is_ok()),
             outimg_path: s.outimg_path.clone(),
             monitor_directories: Some(s.monitor_directories),
+            preview_download_prompt: s.preview_download_prompt,
             plugin_platform: s.plugin_platform.clone(),
             search_mode: s.search_mode.clone().unwrap_or_else(|| "smart".into()),
             presets: s
@@ -118,7 +123,7 @@ impl From<&crate::storage::Settings> for WorkspaceSettings {
                 })
                 .collect(),
             update_auto_check: s.update_auto_check,
-            update_interval_hours: s.update_interval_hours,
+            update_interval_minutes: s.update_interval_minutes(),
             update_skipped_version: s.update_skipped_version.clone(),
             update_last_checked_at: s.update_last_checked_at.map(|v| v as f64),
         }

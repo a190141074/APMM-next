@@ -30,23 +30,26 @@ for kind, report_file, manifest_file in inputs:
         names = archive.namelist()
         assert len({name.casefold() for name in names}) == len(names)
         assert not any(".." in Path(name).parts or Path(name).is_absolute() for name in names)
-        manifest = json.loads(archive.read(manifest_file))
+        prefix = f"APMM-{build['version']}/" if kind == "main" else ""
+        manifest_path = prefix + manifest_file
+        manifest = json.loads(archive.read(manifest_path))
         if kind == "main":
             assert manifest["version"] == build["version"]
-        expected = {record["path"] for record in manifest["files"]} | {manifest_file}
+        expected = {prefix + record["path"] for record in manifest["files"]} | {manifest_path}
         if kind == "plugin":
-            expected.add("plugin.sig")
+            expected.add(prefix + "plugin.sig")
         assert set(names) == expected
         for record in manifest["files"]:
-            payload = archive.read(record["path"])
+            payload = archive.read(prefix + record["path"])
             assert len(payload) == record["bytes"]
             assert digest(payload) == record["sha256"]
         assert not any(re.search(r"(^|/)(data|outimg|previews|vault|node_modules)(/|$)", n, re.I) for n in names)
         assert not any("private" in n.lower() or n.lower().endswith((".pem", ".key")) for n in names)
         assert not any(re.search(r"(^|/)(UT_|cursor_(up|down)\.)", n) for n in names)
         if kind == "main":
-            assert all(("/" not in n or n in {"licenses/LICENSE.txt", "licenses/THIRD_PARTY_NOTICES.md", "licenses/NOTICE.md"}) and not n.lower().endswith((".py", ".pyd", ".png", ".webp")) for n in names)
-            assert "THIRD_PARTY_NOTICES.md" not in names
+            relative_names = {name.removeprefix(prefix) for name in names}
+            assert all(("/" not in n or n in {"licenses/LICENSE.txt", "licenses/THIRD_PARTY_NOTICES.md", "licenses/NOTICE.md"}) and not n.lower().endswith((".py", ".pyd", ".png", ".webp")) for n in relative_names)
+            assert "THIRD_PARTY_NOTICES.md" not in relative_names
         reports.append({"kind": kind, "path": str(archive_path), "bytes": archive_path.stat().st_size,
                         "sha256": build["sha256"], "entries": names, "verifiedFiles": len(manifest["files"])})
 

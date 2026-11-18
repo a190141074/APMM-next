@@ -70,7 +70,16 @@ export function ResourceList({
       entries[index].kind === "heading" ? 46 : resourceSizes[size].thumb + 32,
     overscan: 3,
   });
-  useLayoutEffect(() => virtual.measure(), [size, width, virtual]);
+  useLayoutEffect(() => {
+    virtual.measure();
+    // 等滚动容器挂载并完成换行后重测，避免旧估算高度遮住下一行按钮。
+    const frame = requestAnimationFrame(() => {
+      scrollRef.current
+        ?.querySelectorAll<HTMLElement>(".resource-list-position")
+        .forEach((element) => virtual.measureElement(element));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [size, width, virtual, scrollRef]);
   return (
     <>
       <div
